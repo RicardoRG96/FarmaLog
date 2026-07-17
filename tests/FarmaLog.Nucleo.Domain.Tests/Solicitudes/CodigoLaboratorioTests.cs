@@ -12,5 +12,12 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<CodigoLaboratorioInvalidoException>(() => CodigoLaboratorio.Create("BI"));
         }
+
+        [TestMethod]
+        public void CodigoLaboratorio_ShouldThrow_When_AStringWithValue_XY_IsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CodigoLaboratorioInvalidoException>(() => CodigoLaboratorio.Create("XY"));
+        }
     }
 }

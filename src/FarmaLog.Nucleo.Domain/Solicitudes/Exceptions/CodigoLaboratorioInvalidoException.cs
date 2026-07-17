@@ -4,5 +4,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes.Exceptions
 {
     public class CodigoLaboratorioInvalidoException : DomainException
     {
+        public CodigoLaboratorioInvalidoException(string message) 
+            : base(message) { }
     }
 }
