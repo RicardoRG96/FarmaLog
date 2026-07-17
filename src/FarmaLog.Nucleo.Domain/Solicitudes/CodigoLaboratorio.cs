@@ -10,11 +10,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static CodigoLaboratorio Create(string codigo)
         {
-            foreach (char value in codigo)
-            {
-                if (!char.IsDigit(value))
-                    throw new CodigoLaboratorioInvalidoException("Código inválido");
-            }
+            bool containsOnlyDigits = codigo.All(x => char.IsAsciiDigit(x));
+
+            if (!containsOnlyDigits)
+                throw new CodigoLaboratorioInvalidoException("Código inválido");
 
             return new CodigoLaboratorio(codigo);
         }
