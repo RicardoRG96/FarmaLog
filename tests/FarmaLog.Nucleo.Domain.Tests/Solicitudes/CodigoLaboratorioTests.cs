@@ -14,10 +14,12 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void CodigoLaboratorio_ShouldThrow_When_AStringWithValue_XY_IsPassed()
+        [DataRow("XY")]
+        [DataRow("A1")]
+        public void CodigoLaboratorio_ShouldThrow_When_AStringWithValue_XY_IsPassed(string codigo)
         {
             //Act + Assert
-            Assert.ThrowsExactly<CodigoLaboratorioInvalidoException>(() => CodigoLaboratorio.Create("XY"));
+            Assert.ThrowsExactly<CodigoLaboratorioInvalidoException>(() => CodigoLaboratorio.Create(codigo));
         }
     }
 }

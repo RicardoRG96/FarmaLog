@@ -4,19 +4,19 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed record CodigoLaboratorio
     {
-        public string Code { get; }
+        public string Codigo { get; }
 
-        private CodigoLaboratorio(string code) => Code = code;
+        private CodigoLaboratorio(string codigo) => Codigo = codigo;
 
-        public static CodigoLaboratorio Create(string code)
+        public static CodigoLaboratorio Create(string codigo)
         {
-            foreach (char value in code)
+            foreach (char value in codigo)
             {
                 if (!char.IsDigit(value))
                     throw new CodigoLaboratorioInvalidoException("Código inválido");
             }
 
-            return new CodigoLaboratorio(code);
+            return new CodigoLaboratorio(codigo);
         }
     }   
 }
