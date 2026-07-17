@@ -16,10 +16,30 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [TestMethod]
         [DataRow("XY")]
         [DataRow("A1")]
-        public void CodigoLaboratorio_ShouldThrow_When_AStringThatDoesNotContainOnlyIntegers_IsPassed(string codigo)
+        public void CodigoLaboratorio_ShouldThrow_When_AStringThatDoesNotContainOnlyIntegersIsPassed(string codigo)
         {
             //Act + Assert
             Assert.ThrowsExactly<CodigoLaboratorioInvalidoException>(() => CodigoLaboratorio.Create(codigo));
+        }
+
+        [TestMethod]
+        public void CodigoLaboratorio_ShouldThrow_When_AStringWithALengthLessThanTwoIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CodigoLaboratorioInvalidoException>(() => CodigoLaboratorio.Create("1"));
+        }
+
+        [TestMethod]
+        public void CodigoLaboratorio_ShouldConstruct_When_AStringWithALengthOfTwoIsPassed()
+        {
+            //Arrange
+            CodigoLaboratorio expectedCodigoLab = CodigoLaboratorio.Create("23");
+
+            //Act
+            CodigoLaboratorio codigoLab = CodigoLaboratorio.Create("23");
+
+            //Assert
+            Assert.AreEqual(expectedCodigoLab, codigoLab);
         }
     }
 }
