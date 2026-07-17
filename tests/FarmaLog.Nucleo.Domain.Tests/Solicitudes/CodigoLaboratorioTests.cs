@@ -16,7 +16,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [TestMethod]
         [DataRow("XY")]
         [DataRow("A1")]
-        public void CodigoLaboratorio_ShouldThrow_When_AStringWithValue_XY_IsPassed(string codigo)
+        public void CodigoLaboratorio_ShouldThrow_When_AStringThatDoesNotContainOnlyIntegers_IsPassed(string codigo)
         {
             //Act + Assert
             Assert.ThrowsExactly<CodigoLaboratorioInvalidoException>(() => CodigoLaboratorio.Create(codigo));
