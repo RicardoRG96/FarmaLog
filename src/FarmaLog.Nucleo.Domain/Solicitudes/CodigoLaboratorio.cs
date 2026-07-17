@@ -10,10 +10,13 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static CodigoLaboratorio Create(string codigo)
         {
+            if (codigo.Length < 2)
+                throw new CodigoLaboratorioInvalidoException("El Código de laboratorio debe tener una longitud de al menos dos caracteres");
+
             bool containsOnlyDigits = codigo.All(x => char.IsAsciiDigit(x));
 
             if (!containsOnlyDigits)
-                throw new CodigoLaboratorioInvalidoException("Código inválido");
+                throw new CodigoLaboratorioInvalidoException("El Código de laboratorio solo debe estar compuesto de números enteros");
 
             return new CodigoLaboratorio(codigo);
         }

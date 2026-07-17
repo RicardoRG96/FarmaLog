@@ -33,13 +33,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void CodigoLaboratorio_ShouldConstruct_When_AStringWithALengthOfTwoIsPassed()
         {
             //Arrange
-            CodigoLaboratorio expectedCodigoLab = CodigoLaboratorio.Create("23");
+            string expectedCodigo = "23";
 
             //Act
             CodigoLaboratorio codigoLab = CodigoLaboratorio.Create("23");
 
             //Assert
-            Assert.AreEqual(expectedCodigoLab, codigoLab);
+            Assert.AreEqual(expectedCodigo, codigoLab.Codigo);
         }
     }
 }
