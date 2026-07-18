@@ -19,5 +19,12 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<NumeroDeliveryInvalidoException>(() => NumeroDelivery.Create(null));
         }
+
+        [TestMethod]
+        public void NumeroDelivery_ShouldThrow_When_AWhiteSpaceStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<NumeroDeliveryInvalidoException>(() => NumeroDelivery.Create("   "));
+        }
     }
 }
