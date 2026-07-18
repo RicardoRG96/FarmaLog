@@ -13,7 +13,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static NumeroDelivery Create(string? numero)
         {
-            if (string.IsNullOrEmpty(numero))
+            if (string.IsNullOrWhiteSpace(numero))
                 throw new NumeroDeliveryInvalidoException("El número de Delivery es obligatorio");
             
             return new NumeroDelivery(numero);
