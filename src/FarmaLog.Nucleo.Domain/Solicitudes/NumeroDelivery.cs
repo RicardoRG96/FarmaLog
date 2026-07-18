@@ -1,4 +1,6 @@
-﻿namespace FarmaLog.Nucleo.Domain.Solicitudes
+﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
+
+namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed record NumeroDelivery
     {
@@ -11,8 +13,8 @@
 
         public static NumeroDelivery Create(string numero)
         {
-            //if (numero == "")
-            //    throw new NumeroDeliveryInvalidoException("El número de Delivery es obligatorio");
+            if (numero == "")
+                throw new NumeroDeliveryInvalidoException("El número de Delivery es obligatorio");
 
             return new NumeroDelivery(numero);
         }

@@ -1,4 +1,5 @@
 ﻿using FarmaLog.Nucleo.Domain.Solicitudes;
+using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
 
 namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 {
