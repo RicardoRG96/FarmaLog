@@ -11,11 +11,11 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             Numero = numero;
         }
 
-        public static NumeroDelivery Create(string numero)
+        public static NumeroDelivery Create(string? numero)
         {
-            if (numero == "")
+            if (string.IsNullOrEmpty(numero))
                 throw new NumeroDeliveryInvalidoException("El número de Delivery es obligatorio");
-
+            
             return new NumeroDelivery(numero);
         }
     }
