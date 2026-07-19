@@ -39,5 +39,18 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, numeroDelivery.Numero);
         }
+
+        [TestMethod]
+        public void NumeroDelivery_ShouldConstructTheSameInput_When_AStringWithIntermediateWhiteSpacesIsPassed()
+        {
+            //Arrange
+            string expected = "123 456";
+
+            //Act
+            NumeroDelivery numeroDelivery = NumeroDelivery.Create("123 456");
+
+            //Assert
+            Assert.AreEqual(expected, numeroDelivery.Numero);
+        }
     }
 }
