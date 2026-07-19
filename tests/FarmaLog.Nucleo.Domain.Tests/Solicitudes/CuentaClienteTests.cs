@@ -19,5 +19,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<CuentaClienteInvalidaException>(
                 () => CuentaCliente.Create(formatedCuentaCliente));
         }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldThrow_When_DashIsNotPresent()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
+                () => CuentaCliente.Create("230778903671"));
+        }
     }
 }
