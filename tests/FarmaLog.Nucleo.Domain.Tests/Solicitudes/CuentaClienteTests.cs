@@ -1,4 +1,6 @@
-﻿namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
+﻿using FarmaLog.Nucleo.Domain.Solicitudes;
+
+namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 {
     [TestClass]
     public class CuentaClienteTests
