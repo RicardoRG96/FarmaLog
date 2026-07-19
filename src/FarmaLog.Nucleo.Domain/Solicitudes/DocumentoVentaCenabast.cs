@@ -11,7 +11,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             Valor = valor;
         }
 
-        public static DocumentoVentaCenabast Create(string valor)
+        public static DocumentoVentaCenabast Create(string? valor)
         {
             if (valor == "")
                 throw new DocumentoVentaCenabastInvalidoException(
