@@ -1,8 +1,10 @@
-﻿namespace FarmaLog.Nucleo.Domain.Solicitudes
+﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
+
+namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed record CuentaCliente
     {
-        public CodigoLaboratorio? CodigoLaboratorio { get; set; }
+        public static CodigoLaboratorio? CodigoLaboratorio { get; private set; }
         public string Cuenta { get; }
 
         private CuentaCliente(string cuenta)
@@ -12,6 +14,16 @@
 
         public static CuentaCliente Create(string cuenta)
         {
+            string codigoLaboratorioPrefix = cuenta.Split("-")[0];
+            try
+            {
+                CodigoLaboratorio = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
+            }
+            catch (CodigoLaboratorioInvalidoException ex)
+            {
+                throw new CuentaClienteInvalidaException(ex.Message);
+            }
+            
             return new CuentaCliente(cuenta);
         }
     }
