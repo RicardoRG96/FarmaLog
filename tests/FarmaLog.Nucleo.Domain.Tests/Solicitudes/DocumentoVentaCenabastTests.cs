@@ -40,7 +40,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DocumentoVentaCenabast dvCenabast = DocumentoVentaCenabast.Create("  123  ");
 
             //Assert
-            Assert.AreEqual(expected, dvCenabast.Valor);
+            Assert.AreEqual(expected, dvCenabast.Documento);
         }
 
         [TestMethod]
@@ -53,7 +53,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DocumentoVentaCenabast dvCenabast = DocumentoVentaCenabast.Create("123 456");
 
             //Assert
-            Assert.AreEqual(expected, dvCenabast.Valor);
+            Assert.AreEqual(expected, dvCenabast.Documento);
         }
 
         [TestMethod]
@@ -66,7 +66,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DocumentoVentaCenabast dvCenabast = DocumentoVentaCenabast.Create("0123");
 
             //Assert
-            Assert.AreEqual(expected, dvCenabast.Valor);
+            Assert.AreEqual(expected, dvCenabast.Documento);
         }
     }
 }

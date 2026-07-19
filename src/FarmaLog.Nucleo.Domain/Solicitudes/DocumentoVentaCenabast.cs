@@ -4,22 +4,22 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed record DocumentoVentaCenabast
     {
-        public string Valor { get; }
+        public string Documento { get; }
 
-        private DocumentoVentaCenabast(string valor)
+        private DocumentoVentaCenabast(string documento)
         {
-            Valor = valor;
+            Documento = documento;
         }
 
-        public static DocumentoVentaCenabast Create(string? valor)
+        public static DocumentoVentaCenabast Create(string? documento)
         {
-            if (string.IsNullOrWhiteSpace(valor))
+            if (string.IsNullOrWhiteSpace(documento))
                 throw new DocumentoVentaCenabastInvalidoException(
                     "El documento de venta Cenabast es obligatorio");
 
-            valor = valor.Trim();
+            documento = documento.Trim();
 
-            return new DocumentoVentaCenabast(valor);
+            return new DocumentoVentaCenabast(documento);
         }
     }
 }
