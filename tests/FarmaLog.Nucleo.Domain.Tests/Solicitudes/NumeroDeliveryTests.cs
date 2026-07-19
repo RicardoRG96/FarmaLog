@@ -52,5 +52,18 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, numeroDelivery.Numero);
         }
+
+        [TestMethod]
+        public void NumeroDelivery_Should_ConstructANumeroDeliveryWithLeadingZero_When_AStringWithLeadingZeroIsPassed()
+        {
+            //Arrange
+            string expected = "0123";
+
+            //Act
+            NumeroDelivery numeroDelivery = NumeroDelivery.Create("0123");
+
+            //Assert
+            Assert.AreEqual(expected, numeroDelivery.Numero);
+        }
     }
 }
