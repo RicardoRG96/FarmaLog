@@ -1,0 +1,14 @@
+﻿namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
+{
+    [TestClass]
+    public class DocumentoVentaCenabastTests
+    {
+        [TestMethod]
+        public void DocumentoVentaCenabast_ShouldThrow_When_AnEmptyStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DocumentoVentaCenabastInvalidoException>(
+                () => DocumentoVentaCenabast.Create(""));
+        }
+    }
+}
