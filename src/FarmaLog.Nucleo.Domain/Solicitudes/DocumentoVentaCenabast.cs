@@ -1,4 +1,6 @@
-﻿namespace FarmaLog.Nucleo.Domain.Solicitudes
+﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
+
+namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed record DocumentoVentaCenabast
     {
