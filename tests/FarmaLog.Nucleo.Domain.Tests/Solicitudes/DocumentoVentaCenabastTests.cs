@@ -42,5 +42,18 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, dvCenabast.Valor);
         }
+
+        [TestMethod]
+        public void DocumentoVentaCenabast_ShouldConstructTheSameInput_When_AStringWithIntermediateWhiteSpacesIsPassed()
+        {
+            //Arrange
+            string expected = "123 456";
+
+            //Act
+            DocumentoVentaCenabast dvCenabast = DocumentoVentaCenabast.Create("123 456");
+
+            //Assert
+            Assert.AreEqual(expected, dvCenabast.Valor);
+        }
     }
 }
