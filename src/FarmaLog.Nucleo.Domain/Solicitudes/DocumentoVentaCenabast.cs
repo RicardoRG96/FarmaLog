@@ -13,7 +13,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static DocumentoVentaCenabast Create(string? valor)
         {
-            if (string.IsNullOrEmpty(valor))
+            if (string.IsNullOrWhiteSpace(valor))
                 throw new DocumentoVentaCenabastInvalidoException(
                     "El documento de venta Cenabast es obligatorio");
 

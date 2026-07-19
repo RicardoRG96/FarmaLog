@@ -21,5 +21,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<DocumentoVentaCenabastInvalidoException>(
                 () => DocumentoVentaCenabast.Create(null));
         }
+
+        [TestMethod]
+        public void DocumentoVentaCenabast_ShouldThrow_When_AWhiteSpaceStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DocumentoVentaCenabastInvalidoException>(
+                () => DocumentoVentaCenabast.Create("   "));
+        }
     }
 }
