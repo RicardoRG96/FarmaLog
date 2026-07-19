@@ -17,6 +17,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 throw new DocumentoVentaCenabastInvalidoException(
                     "El documento de venta Cenabast es obligatorio");
 
+            valor = valor.Trim();
+
             return new DocumentoVentaCenabast(valor);
         }
     }
