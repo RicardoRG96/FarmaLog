@@ -30,7 +30,14 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             {
                 throw new CuentaClienteInvalidaException(ex.Message);
             }
-            
+
+            char lastCuentaClienteCharacter = cuenta[cuenta.Length - 1];
+
+            bool isLastCharacterALetter = char.IsAsciiLetter(lastCuentaClienteCharacter);
+
+            if (isLastCharacterALetter)
+                cuenta = cuenta.ToLower();
+
             return new CuentaCliente(cuenta);
         }
     }

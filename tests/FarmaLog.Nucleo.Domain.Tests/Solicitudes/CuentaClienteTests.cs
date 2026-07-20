@@ -43,5 +43,18 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<CuentaClienteInvalidaException>(
                 () => CuentaCliente.Create("23-00778903671"));
         }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldConstruct_WithLastCharacterNormalized_When_RutHasALetterAsDV()
+        {
+            //Arrange
+            string expected = "23-077890367k";
+
+            //Act
+            CuentaCliente cuentaCliente = CuentaCliente.Create("23-077890367K");
+
+            //Assert
+            Assert.AreEqual(expected, cuentaCliente.Cuenta);
+        }
     }
 }
