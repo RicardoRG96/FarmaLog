@@ -4,11 +4,12 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed record CuentaCliente
     {
-        public static CodigoLaboratorio? CodigoLaboratorio { get; private set; }
+        public CodigoLaboratorio Codigo { get; }
         public string Cuenta { get; }
 
-        private CuentaCliente(string cuenta)
+        private CuentaCliente(CodigoLaboratorio codigo, string cuenta)
         {
+            Codigo = codigo;
             Cuenta = cuenta;
         }
 
@@ -18,14 +19,14 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             VerifyForCorrectDashFormat(splitedCuentaCliente);
 
-            VerifyForCorrectCodigoLaboratorioFormat(splitedCuentaCliente);
+            CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(splitedCuentaCliente);
 
             VerifyRutHasOnlyDigitsExceptForTheLastOneChar(splitedCuentaCliente);
 
             if (HasRutALetterDV(cuenta))
                 cuenta = cuenta.ToLower();
 
-            return new CuentaCliente(cuenta);
+            return new CuentaCliente(codigo, cuenta);
         }
 
         private static void VerifyForCorrectDashFormat(string[] splitedCuentaCliente)
@@ -35,21 +36,27 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                     "La cuenta de cliente debe tener un separador válido entre el codigo del laboratorio y el Rut del cliente");
         }
 
-        private static void VerifyForCorrectCodigoLaboratorioFormat(string[] splitedCuentaCliente)
+        private static CodigoLaboratorio VerifyForCorrectCodigoLaboratorioFormat(
+            string[] splitedCuentaCliente)
         {
             string codigoLaboratorioPrefix = splitedCuentaCliente[0];
 
+            CodigoLaboratorio codigo;
+
             try
             {
-                CodigoLaboratorio = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
+                codigo = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
             }
             catch (CodigoLaboratorioInvalidoException ex)
             {
                 throw new CuentaClienteInvalidaException(ex.Message);
             }
+
+            return codigo;
         }
 
-        private static void VerifyRutHasOnlyDigitsExceptForTheLastOneChar(string[] splitedCuentaCliente)
+        private static void VerifyRutHasOnlyDigitsExceptForTheLastOneChar(
+            string[] splitedCuentaCliente)
         {
             string rutPortion = splitedCuentaCliente[1];
 
