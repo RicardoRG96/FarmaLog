@@ -56,5 +56,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, cuentaCliente.Cuenta);
         }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldThrow_When_ThePortionAfterTheDashDoesNotContainsOnlyDigitsExceptTheLastOneChar()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
+                () => CuentaCliente.Create("23-0778TH367K"));
+        }
     }
 }

@@ -31,6 +31,14 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 throw new CuentaClienteInvalidaException(ex.Message);
             }
 
+            string rutPortion = splitedCuentaCliente[1];
+
+            bool containsOnlyDigits = rutPortion[.. ^1].All(x => Char.IsAsciiDigit(x));
+
+            if (!containsOnlyDigits)
+                throw new CuentaClienteInvalidaException(
+                    "La cuenta de cliente debe tener un Rut válido");
+
             char lastCuentaClienteCharacter = cuenta[cuenta.Length - 1];
 
             bool isLastCharacterALetter = char.IsAsciiLetter(lastCuentaClienteCharacter);
