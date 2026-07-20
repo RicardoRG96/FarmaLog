@@ -15,31 +15,31 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static CuentaCliente Create(string cuenta)
         {
-            string[] splitedCuentaCliente = cuenta.Split('-');
+            string[] splitCuentaCliente = cuenta.Split('-');
 
-            VerifyForCorrectDashFormat(splitedCuentaCliente);
+            VerifyForCorrectDashFormat(splitCuentaCliente);
 
-            CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(splitedCuentaCliente);
+            CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(splitCuentaCliente);
 
-            VerifyRutHasOnlyDigitsExceptForTheLastOneChar(splitedCuentaCliente);
+            VerifyRutHasOnlyDigitsExceptForTheLastOneChar(splitCuentaCliente);
 
-            if (HasRutALetterDV(cuenta))
+            if (HasRutADigitoVerificadorK(cuenta))
                 cuenta = cuenta.ToLower();
 
             return new CuentaCliente(codigo, cuenta);
         }
 
-        private static void VerifyForCorrectDashFormat(string[] splitedCuentaCliente)
+        private static void VerifyForCorrectDashFormat(string[] splitCuentaCliente)
         {
-            if (splitedCuentaCliente.Length != 2 || splitedCuentaCliente[1].Length != 10)
+            if (splitCuentaCliente.Length != 2 || splitCuentaCliente[1].Length != 10)
                 throw new CuentaClienteInvalidaException(
                     "La cuenta de cliente debe tener un separador válido entre el codigo del laboratorio y el Rut del cliente");
         }
 
         private static CodigoLaboratorio VerifyForCorrectCodigoLaboratorioFormat(
-            string[] splitedCuentaCliente)
+            string[] splitCuentaCliente)
         {
-            string codigoLaboratorioPrefix = splitedCuentaCliente[0];
+            string codigoLaboratorioPrefix = splitCuentaCliente[0];
 
             CodigoLaboratorio codigo;
 
@@ -56,9 +56,9 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         }
 
         private static void VerifyRutHasOnlyDigitsExceptForTheLastOneChar(
-            string[] splitedCuentaCliente)
+            string[] splitCuentaCliente)
         {
-            string rutPortion = splitedCuentaCliente[1];
+            string rutPortion = splitCuentaCliente[1];
 
             bool containsOnlyDigits = rutPortion[..^1].All(x => Char.IsAsciiDigit(x));
 
@@ -67,11 +67,11 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                     "La cuenta de cliente debe tener un Rut válido");
         }
 
-        private static bool HasRutALetterDV(string cuentaCliente)
+        private static bool HasRutADigitoVerificadorK(string cuentaCliente)
         {
             char lastCuentaClienteCharacter = cuentaCliente[cuentaCliente.Length - 1];
 
-            return char.IsAsciiLetter(lastCuentaClienteCharacter);
+            return lastCuentaClienteCharacter == 'k' || lastCuentaClienteCharacter == 'K';
         }
     }
 }
