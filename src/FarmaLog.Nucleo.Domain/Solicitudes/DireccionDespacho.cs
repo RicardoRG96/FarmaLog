@@ -18,8 +18,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             if (!direccion.Contains('-'))
                 throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
 
-            string rutCliente = direccion.Split('-')[1].Split('D')[0];
+            if (!direccion.Contains('D'))
+                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
 
+            string rutCliente = direccion.Split('-')[1].Split('D')[0];
 
             if (rutCliente.Length < 8)
                 throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
