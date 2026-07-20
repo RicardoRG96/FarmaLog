@@ -15,12 +15,16 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static DireccionDespacho Create(string direccion)
         {
-            string[] splitDireccionDespacho = direccion.Split('-');
-
             if (!direccion.Contains('-'))
                 throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
 
-            string codigoLaboratorioPrefix = splitDireccionDespacho[0];
+            string rutCliente = direccion.Split('-')[1].Split('D')[0];
+
+
+            if (rutCliente.Length < 8)
+                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+
+            string codigoLaboratorioPrefix = direccion.Split('-')[0];
 
             try
             {
