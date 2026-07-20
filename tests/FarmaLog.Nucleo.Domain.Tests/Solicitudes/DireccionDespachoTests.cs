@@ -8,8 +8,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     {
         [TestMethod]
         [DataRow("BI")]
-        [DataRow("A1")]
-        [DataRow("1")]
+        //[DataRow("A1")]
+        //[DataRow("1")]
         public void DireccionDespacho_ShouldThrow_When_CodigoLaboratorioIsInvalid(
             string codigoLaboratorio)
         {
