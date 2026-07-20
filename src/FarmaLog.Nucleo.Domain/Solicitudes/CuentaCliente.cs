@@ -14,7 +14,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static CuentaCliente Create(string cuenta)
         {
-            string[] splitedCuentaCliente = cuenta.Split("-");
+            string[] splitedCuentaCliente = cuenta.Split('-');
 
             VerifyForCorrectDashFormat(splitedCuentaCliente);
 
