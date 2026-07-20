@@ -14,11 +14,13 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static CuentaCliente Create(string cuenta)
         {
-            if (!cuenta.Contains('-') || cuenta == "230778903671-")
+            string[] splitedCuentaCliente = cuenta.Split("-");
+
+            if (!cuenta.Contains('-') || splitedCuentaCliente[1].Length != 10)
                 throw new CuentaClienteInvalidaException(
                     "La cuenta de cliente debe tener un separador válido entre el codigo del laboratorio y el Rut del cliente");
 
-            string codigoLaboratorioPrefix = cuenta.Split("-")[0];
+            string codigoLaboratorioPrefix = splitedCuentaCliente[0];
 
             try
             {
