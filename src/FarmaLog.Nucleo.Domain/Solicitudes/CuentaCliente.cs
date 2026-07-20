@@ -22,9 +22,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(splitCuentaCliente);
 
             VerifyForValidRut(splitCuentaCliente);
-
-            if (HasRutADigitoVerificadorK(cuenta))
-                cuenta = cuenta.ToLower();
+            
+            cuenta = cuenta.ToLower();
 
             return new CuentaCliente(codigo, cuenta);
         }
@@ -73,13 +72,6 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 !isAValidDigitoVerificador)
                 throw new CuentaClienteInvalidaException(
                     "La cuenta de cliente debe tener un Rut válido");
-        }
-
-        private static bool HasRutADigitoVerificadorK(string cuentaCliente)
-        {
-            char lastCuentaClienteCharacter = cuentaCliente[cuentaCliente.Length - 1];
-
-            return lastCuentaClienteCharacter == 'k' || lastCuentaClienteCharacter == 'K';
         }
     }
 }
