@@ -16,10 +16,27 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         {
             string[] splitedCuentaCliente = cuenta.Split("-");
 
-            if (!cuenta.Contains('-') || splitedCuentaCliente[1].Length != 10)
+            VerifyForCorrectDashFormat(splitedCuentaCliente);
+
+            VerifyForCorrectCodigoLaboratorioFormat(splitedCuentaCliente);
+
+            VerifyRutHasOnlyDigitsExceptForTheLastOneChar(splitedCuentaCliente);
+
+            if (HasRutALetterDV(cuenta))
+                cuenta = cuenta.ToLower();
+
+            return new CuentaCliente(cuenta);
+        }
+
+        private static void VerifyForCorrectDashFormat(string[] splitedCuentaCliente)
+        {
+            if (splitedCuentaCliente.Length != 2 || splitedCuentaCliente[1].Length != 10)
                 throw new CuentaClienteInvalidaException(
                     "La cuenta de cliente debe tener un separador válido entre el codigo del laboratorio y el Rut del cliente");
+        }
 
+        private static void VerifyForCorrectCodigoLaboratorioFormat(string[] splitedCuentaCliente)
+        {
             string codigoLaboratorioPrefix = splitedCuentaCliente[0];
 
             try
@@ -30,23 +47,24 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             {
                 throw new CuentaClienteInvalidaException(ex.Message);
             }
+        }
 
+        private static void VerifyRutHasOnlyDigitsExceptForTheLastOneChar(string[] splitedCuentaCliente)
+        {
             string rutPortion = splitedCuentaCliente[1];
 
-            bool containsOnlyDigits = rutPortion[.. ^1].All(x => Char.IsAsciiDigit(x));
+            bool containsOnlyDigits = rutPortion[..^1].All(x => Char.IsAsciiDigit(x));
 
             if (!containsOnlyDigits)
                 throw new CuentaClienteInvalidaException(
                     "La cuenta de cliente debe tener un Rut válido");
+        }
 
-            char lastCuentaClienteCharacter = cuenta[cuenta.Length - 1];
+        private static bool HasRutALetterDV(string cuentaCliente)
+        {
+            char lastCuentaClienteCharacter = cuentaCliente[cuentaCliente.Length - 1];
 
-            bool isLastCharacterALetter = char.IsAsciiLetter(lastCuentaClienteCharacter);
-
-            if (isLastCharacterALetter)
-                cuenta = cuenta.ToLower();
-
-            return new CuentaCliente(cuenta);
+            return char.IsAsciiLetter(lastCuentaClienteCharacter);
         }
     }
 }

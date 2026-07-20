@@ -29,19 +29,31 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void CuentaCliente_ShouldThrow_When_DashIsNotInTheRightPosition()
+        [DataRow("230778903671-")]
+        [DataRow("230778903-671")]
+        public void CuentaCliente_ShouldThrow_When_DashIsNotInTheRightPosition(string cuentaCliente)
         {
             //Act + Assert
             Assert.ThrowsExactly<CuentaClienteInvalidaException>(
-                () => CuentaCliente.Create("230778903671-"));
+                () => CuentaCliente.Create(cuentaCliente));
         }
 
         [TestMethod]
-        public void CuentaCliente_ShouldThrow_When_ThePortionAfterTheDashIsNotTen()
+        [DataRow("23-00778903671")]
+        [DataRow("23-007789031")]
+        public void CuentaCliente_ShouldThrow_When_ThePortionAfterTheDashIsNotTen(string cuentaCliente)
         {
             //Act + Assert
             Assert.ThrowsExactly<CuentaClienteInvalidaException>(
-                () => CuentaCliente.Create("23-00778903671"));
+                () => CuentaCliente.Create(cuentaCliente));
+        }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldThrow_When_ThePortionAfterTheDashDoesNotContainsOnlyDigitsExceptTheLastOneChar()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
+                () => CuentaCliente.Create("23-0778TH367K"));
         }
 
         [TestMethod]
@@ -57,12 +69,5 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.AreEqual(expected, cuentaCliente.Cuenta);
         }
 
-        [TestMethod]
-        public void CuentaCliente_ShouldThrow_When_ThePortionAfterTheDashDoesNotContainsOnlyDigitsExceptTheLastOneChar()
-        {
-            //Act + Assert
-            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
-                () => CuentaCliente.Create("23-0778TH367K"));
-        }
     }
 }
