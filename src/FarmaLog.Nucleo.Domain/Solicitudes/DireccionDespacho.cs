@@ -15,9 +15,11 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static DireccionDespacho Create(string direccion)
         {
+            string codigoLaboratorioPrefix = direccion.Split("-")[0];
+
             try
             {
-                CodigoLaboratorio codigo = CodigoLaboratorio.Create("BI-778903671D1");
+                CodigoLaboratorio codigo = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
             } 
             catch (CodigoLaboratorioInvalidoException ex)
             {
