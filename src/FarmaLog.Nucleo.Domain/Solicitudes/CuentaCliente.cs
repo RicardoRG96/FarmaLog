@@ -21,7 +21,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(splitCuentaCliente);
 
-            VerifyRutHasOnlyDigitsExceptForTheLastOneChar(splitCuentaCliente);
+            VerifyForValidRut(splitCuentaCliente);
 
             if (HasRutADigitoVerificadorK(cuenta))
                 cuenta = cuenta.ToLower();
@@ -55,14 +55,22 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             return codigo;
         }
 
-        private static void VerifyRutHasOnlyDigitsExceptForTheLastOneChar(
-            string[] splitCuentaCliente)
+        private static void VerifyForValidRut(string[] splitCuentaCliente)
         {
-            string rutPortion = splitCuentaCliente[1];
+            string rutPortion = splitCuentaCliente[1].ToLower();
 
-            bool containsOnlyDigits = rutPortion[..^1].All(x => Char.IsAsciiDigit(x));
+            string rutPortionWithoutDigitoVerificador = rutPortion[..^1];
 
-            if (!containsOnlyDigits)
+            bool rutPortionWithoutDigitoVerificadorContainsOnlyDigits = 
+                rutPortionWithoutDigitoVerificador.All(x => Char.IsAsciiDigit(x));
+
+            char digitoVerificador = rutPortion[rutPortion.Length - 1];
+
+            bool isAValidDigitoVerificador = char.IsAsciiDigit(digitoVerificador) ||
+                digitoVerificador == 'k';
+
+            if (!rutPortionWithoutDigitoVerificadorContainsOnlyDigits ||
+                !isAValidDigitoVerificador)
                 throw new CuentaClienteInvalidaException(
                     "La cuenta de cliente debe tener un Rut válido");
         }

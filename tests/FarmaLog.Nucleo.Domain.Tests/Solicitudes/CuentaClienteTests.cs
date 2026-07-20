@@ -69,5 +69,16 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.AreEqual(expected, cuentaCliente.Cuenta);
         }
 
+        [TestMethod]
+        [DataRow("23-077890367Q")]
+        [DataRow("23-077890367$")]
+        [DataRow("23-077890367.")]
+        public void CuentaCliente_ShouldThrow_When_ARutHasNotANumberOrALetterKAsDigitoVerificador(
+            string cuentaCliente)
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
+                () => CuentaCliente.Create(cuentaCliente));
+        }
     }
 }
