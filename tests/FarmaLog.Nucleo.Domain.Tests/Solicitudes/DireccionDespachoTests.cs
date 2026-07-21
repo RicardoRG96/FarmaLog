@@ -67,7 +67,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void DireccionDespacho_ShouldConstruct_When_DireccionDespachoHasALowercaseLetterD()
+        public void DireccionDespacho_ShouldConstruct_AndNormalize_When_DireccionDespachoHasALowercaseLetterD()
         {
             //Arrange
             string expected = "23-778903671D1";
@@ -95,10 +95,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void DireccionDespacho_ShouldConstruct_WithLastCharOfTheRutNormalized_When_RutHasALetterAsDV()
         {
             //Arrange
-            string expected = "23-77890367kD1";
+            string expected = "23-77890367KD1";
 
             //Act
-            DireccionDespacho direccionDespacho = DireccionDespacho.Create("23-77890367KD1");
+            DireccionDespacho direccionDespacho = DireccionDespacho.Create("23-77890367kD1");
 
             //Assert
             Assert.AreEqual(expected, direccionDespacho.Direccion);
