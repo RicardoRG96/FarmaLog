@@ -32,13 +32,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                     "La dirección de despacho debe tener un Rut válido");
             }
 
-            char digitoVerificador = rutCliente[rutCliente.Length - 1];
-
-            int indexOfDigitoVerificador = direccion.IndexOf(char.ToUpper(digitoVerificador));
-
-            char lowerDigitoVerificador = char.ToLower(direccion[indexOfDigitoVerificador]);
-
-            direccion = direccion[..indexOfDigitoVerificador] + lowerDigitoVerificador + direccion.Substring(indexOfDigitoVerificador + 1);
+            direccion = NormalizeDigitoVerificador(direccion);
 
             return new DireccionDespacho(codigo, direccion);
         }
@@ -74,6 +68,21 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             }
 
             return codigo;
+        }
+
+        private static string NormalizeDigitoVerificador(string direccion)
+        {
+            string rutCliente = direccion.Split('-')[1].Split('D')[0];
+
+            char digitoVerificador = rutCliente[rutCliente.Length - 1];
+
+            int indexOfDigitoVerificador = direccion.IndexOf(char.ToUpper(digitoVerificador));
+
+            char lowerDigitoVerificador = char.ToLower(direccion[indexOfDigitoVerificador]);
+
+            return direccion[..indexOfDigitoVerificador] + 
+                lowerDigitoVerificador + 
+                direccion.Substring(indexOfDigitoVerificador + 1);
         }
     }
 }
