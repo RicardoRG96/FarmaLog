@@ -1,4 +1,5 @@
-﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
+﻿using FarmaLog.Nucleo.Domain.Common;
+using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
 
 namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
@@ -25,21 +26,13 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(direccion);
 
-            rutCliente = rutCliente.ToLower();
-
-            string rutClienteWithoutDigitoVerificador = rutCliente[..^1];
-
-            bool rutClienteWithoutDigitoVerificadorContainsOnlyDigits =
-                rutClienteWithoutDigitoVerificador.All(x => char.IsAsciiDigit(x));
+            if (!RutValidation.IsValidRutFormat(rutCliente))
+            {
+                throw new DireccionDespachoInvalidaException(
+                    "La dirección de despacho debe tener un Rut válido");
+            }
 
             char digitoVerificador = rutCliente[rutCliente.Length - 1];
-
-            bool isAValidDigitoVerificador = char.IsAsciiDigit(digitoVerificador) ||
-                digitoVerificador == 'k';
-
-            if (!rutClienteWithoutDigitoVerificadorContainsOnlyDigits ||
-                !isAValidDigitoVerificador)
-                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
 
             int indexOfDigitoVerificador = direccion.IndexOf(char.ToUpper(digitoVerificador));
 
@@ -61,7 +54,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         private static void VerifyRutHasAValidLength(string rutCliente)
         {
-            if (rutCliente.Length < 8)
+            if (rutCliente.Length < 8 || rutCliente.Length > 9)
                 throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
         }
 

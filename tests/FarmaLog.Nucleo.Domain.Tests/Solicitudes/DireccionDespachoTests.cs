@@ -52,11 +52,18 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void DireccionDespacho_ShouldThrow_When_LetterD_IsNotInTheRightPosition()
+        [DataRow("23-77890D36711")]
+        [DataRow("23-7789D036711")]
+        [DataRow("23-778D9036711")]
+        [DataRow("23-7D789036711")]
+        [DataRow("23-7789036711D")]
+        [DataRow("23-D7789036711")]
+        public void DireccionDespacho_ShouldThrow_When_LetterD_IsNotInTheRightPosition(
+            string direccion)
         {
             //Act + Assert
             Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
-                () => DireccionDespacho.Create("23-77890D36711"));
+                () => DireccionDespacho.Create(direccion));
         }
 
         [TestMethod]
@@ -73,11 +80,15 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void DireccionDespacho_ShouldThrow_When_RutDoesNotContainsOnlyDigitsExceptTheLastOneChar()
+        [DataRow("23-7789HJ671D1")]
+        [DataRow("23-7789HJ67KD1")]
+        [DataRow("23-.7/95667KD1")]
+        public void DireccionDespacho_ShouldThrow_When_RutDoesNotContainsOnlyDigitsExceptTheLastOneChar(
+            string direccion)
         {
             //Act + Assert
             Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
-                () => DireccionDespacho.Create("23-7789HJ671D1"));
+                () => DireccionDespacho.Create(direccion));
         }
 
         [TestMethod]
