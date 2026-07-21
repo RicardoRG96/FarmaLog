@@ -133,13 +133,20 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [DataRow("23-77890367KD010")]
         [DataRow("23-77890367KD0018")]
         [DataRow("23-77890367KD00030")]
-        [DataRow("23-77890367KD0")]
         public void DireccionDespacho_ShouldThrow_When_TheCharactersAfterThe_D_HasALeadingZero(
             string direccion)
         {
             //Act + Assert
             Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
                 () => DireccionDespacho.Create(direccion));
+        }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldThrow_When_TheCharacterAfterThe_D_IsLessThanOne()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
+                () => DireccionDespacho.Create("23-77890367KD0"));
         }
     }
 }
