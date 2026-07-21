@@ -17,29 +17,13 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         {
             direccion = direccion.ToUpper();
 
-            if (!direccion.Contains('-'))
-                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
-
-            if (!direccion.Contains('D'))
-                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+            VerifyDireccionContainsDashAndLetterD(direccion);
 
             string rutCliente = direccion.Split('-')[1].Split('D')[0];
 
-            if (rutCliente.Length < 8)
-                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+            VerifyRutHasAValidLength(rutCliente);
 
-            string codigoLaboratorioPrefix = direccion.Split('-')[0];
-
-            CodigoLaboratorio codigo;
-
-            try
-            {
-                codigo = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
-            }
-            catch (CodigoLaboratorioInvalidoException ex)
-            {
-                throw new DireccionDespachoInvalidaException(ex.Message);
-            }
+            CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(direccion);
 
             rutCliente = rutCliente.ToLower();
 
@@ -61,9 +45,42 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             char lowerDigitoVerificador = char.ToLower(direccion[indexOfDigitoVerificador]);
 
-            direccion = direccion.Substring(0, indexOfDigitoVerificador) + lowerDigitoVerificador + direccion.Substring(indexOfDigitoVerificador + 1);
+            direccion = direccion[..indexOfDigitoVerificador] + lowerDigitoVerificador + direccion.Substring(indexOfDigitoVerificador + 1);
 
             return new DireccionDespacho(codigo, direccion);
+        }
+
+        private static void VerifyDireccionContainsDashAndLetterD(string direccion)
+        {
+            if (!direccion.Contains('-'))
+                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+
+            if (!direccion.Contains('D'))
+                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+        }
+
+        private static void VerifyRutHasAValidLength(string rutCliente)
+        {
+            if (rutCliente.Length < 8)
+                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+        }
+
+        private static CodigoLaboratorio VerifyForCorrectCodigoLaboratorioFormat(string direccion)
+        {
+            string codigoLaboratorioPrefix = direccion.Split('-')[0];
+
+            CodigoLaboratorio codigo;
+
+            try
+            {
+                codigo = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
+            }
+            catch (CodigoLaboratorioInvalidoException ex)
+            {
+                throw new DireccionDespachoInvalidaException(ex.Message);
+            }
+
+            return codigo;
         }
     }
 }
