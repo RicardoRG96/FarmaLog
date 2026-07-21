@@ -79,5 +79,18 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
                 () => DireccionDespacho.Create("23-7789HJ671D1"));
         }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldConstruct_WithLastCharOfTheRutNormalized_When_RutHasALetterAsDV()
+        {
+            //Arrange
+            string expected = "23-77890367kD1";
+
+            //Act
+            DireccionDespacho direccionDespacho = DireccionDespacho.Create("23-77890367KD1");
+
+            //Assert
+            Assert.AreEqual(expected, direccionDespacho.Direccion);
+        }
     }
 }

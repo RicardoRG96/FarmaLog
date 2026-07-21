@@ -30,24 +30,40 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             string codigoLaboratorioPrefix = direccion.Split('-')[0];
 
+            CodigoLaboratorio codigo;
+
             try
             {
-                CodigoLaboratorio codigo = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
+                codigo = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
             }
             catch (CodigoLaboratorioInvalidoException ex)
             {
                 throw new DireccionDespachoInvalidaException(ex.Message);
             }
 
+            rutCliente = rutCliente.ToLower();
+
             string rutClienteWithoutDigitoVerificador = rutCliente[..^1];
 
             bool rutClienteWithoutDigitoVerificadorContainsOnlyDigits =
                 rutClienteWithoutDigitoVerificador.All(x => char.IsAsciiDigit(x));
 
-            if (!rutClienteWithoutDigitoVerificadorContainsOnlyDigits)
+            char digitoVerificador = rutCliente[rutCliente.Length - 1];
+
+            bool isAValidDigitoVerificador = char.IsAsciiDigit(digitoVerificador) ||
+                digitoVerificador == 'k';
+
+            if (!rutClienteWithoutDigitoVerificadorContainsOnlyDigits ||
+                !isAValidDigitoVerificador)
                 throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
 
-            return new DireccionDespacho(CodigoLaboratorio.Create("23"), "23-778903671D1");
+            int indexOfDigitoVerificador = direccion.IndexOf(char.ToUpper(digitoVerificador));
+
+            char lowerDigitoVerificador = char.ToLower(direccion[indexOfDigitoVerificador]);
+
+            direccion = direccion.Substring(0, indexOfDigitoVerificador) + lowerDigitoVerificador + direccion.Substring(indexOfDigitoVerificador + 1);
+
+            return new DireccionDespacho(codigo, direccion);
         }
     }
 }
