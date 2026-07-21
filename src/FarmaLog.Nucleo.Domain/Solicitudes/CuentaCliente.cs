@@ -30,7 +30,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                     "La cuenta de cliente debe tener un Rut válido");
             }
 
-            cuenta = cuenta.ToLower();
+            cuenta = cuenta.ToUpper();
 
             return new CuentaCliente(codigo, cuenta);
         }

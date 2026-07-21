@@ -6,7 +6,7 @@ namespace FarmaLog.Nucleo.Domain.Common
     {
         public static bool IsValidRutFormat(string rut)
         {
-            rut = rut.ToLower();
+            rut = rut.ToUpper();
 
             string rutPortionWithoutDigitoVerificador = rut[..^1];
 
@@ -16,7 +16,7 @@ namespace FarmaLog.Nucleo.Domain.Common
             char digitoVerificador = rut[rut.Length - 1];
 
             bool isAValidDigitoVerificador = char.IsAsciiDigit(digitoVerificador) ||
-                digitoVerificador == 'k';
+                digitoVerificador == 'K';
 
             return rutPortionWithoutDigitoVerificadorContainsOnlyDigits &&
                 isAValidDigitoVerificador;

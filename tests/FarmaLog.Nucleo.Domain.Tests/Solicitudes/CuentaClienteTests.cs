@@ -31,6 +31,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [TestMethod]
         [DataRow("230778903671-")]
         [DataRow("230778903-671")]
+        [DataRow("-230778903671")]
+        [DataRow("230-778903671")]
         public void CuentaCliente_ShouldThrow_When_DashIsNotInTheRightPosition(string cuentaCliente)
         {
             //Act + Assert
@@ -60,10 +62,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void CuentaCliente_ShouldConstruct_WithLastCharacterNormalized_When_RutHasALetterAsDV()
         {
             //Arrange
-            string expected = "23-077890367k";
+            string expected = "23-077890367K";
 
             //Act
-            CuentaCliente cuentaCliente = CuentaCliente.Create("23-077890367K");
+            CuentaCliente cuentaCliente = CuentaCliente.Create("23-077890367k");
 
             //Assert
             Assert.AreEqual(expected, cuentaCliente.Cuenta);
