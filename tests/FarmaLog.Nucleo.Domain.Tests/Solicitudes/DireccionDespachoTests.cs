@@ -117,11 +117,15 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void DireccionDespacho_ShouldThrow_When_TheCharactersAfterTheDAreNotNumbers()
+        [DataRow("23-77890367KDlm")]
+        [DataRow("23-77890367KD.$")]
+        [DataRow("23-77890367KD/=?#,")]
+        public void DireccionDespacho_ShouldThrow_When_TheCharactersAfterTheDAreNotNumbers(
+            string direccion)
         {
             //Act + Assert
             Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
-                () => DireccionDespacho.Create("23-77890367KDlm"));
+                () => DireccionDespacho.Create(direccion));
         }
     }
 }
