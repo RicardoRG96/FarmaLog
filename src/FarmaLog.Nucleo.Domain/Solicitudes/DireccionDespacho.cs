@@ -40,6 +40,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 throw new DireccionDespachoInvalidaException(
                     "La dirección de despacho es inválida");
 
+            if (direccionCounter[0] == '0')
+                throw new DireccionDespachoInvalidaException(
+                    "La dirección de despacho es inválida");
+
             return new DireccionDespacho(codigo, direccion);
         }
 
