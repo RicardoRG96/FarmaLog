@@ -81,9 +81,9 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             {
                 string direccionCounter = direccion.Split('-')[1].Split('D')[1];
 
-                bool theCounterHasOnlyDigits = direccionCounter.All(x => char.IsAsciiDigit(x));
+                bool counterHasOnlyDigits = direccionCounter.All(x => char.IsAsciiDigit(x));
 
-                if (!theCounterHasOnlyDigits)
+                if (!counterHasOnlyDigits)
                     throw new DireccionDespachoInvalidaException(
                         "La dirección de despacho es inválida");
 
