@@ -32,17 +32,25 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                     "La dirección de despacho debe tener un Rut válido");
             }
 
-            string direccionCounter = direccion.Split('-')[1].Split('D')[1];
+            try
+            {
+                string direccionCounter = direccion.Split('-')[1].Split('D')[1];
 
-            bool theCounterHasOnlyDigits = direccionCounter.All(x => char.IsAsciiDigit(x));
+                bool theCounterHasOnlyDigits = direccionCounter.All(x => char.IsAsciiDigit(x));
 
-            if (!theCounterHasOnlyDigits)
+                if (!theCounterHasOnlyDigits)
+                    throw new DireccionDespachoInvalidaException(
+                        "La dirección de despacho es inválida");
+
+                if (direccionCounter[0] == '0')
+                    throw new DireccionDespachoInvalidaException(
+                        "La dirección de despacho es inválida");
+            } 
+            catch (IndexOutOfRangeException)
+            {
                 throw new DireccionDespachoInvalidaException(
                     "La dirección de despacho es inválida");
-
-            if (direccionCounter[0] == '0')
-                throw new DireccionDespachoInvalidaException(
-                    "La dirección de despacho es inválida");
+            }
 
             return new DireccionDespacho(codigo, direccion);
         }

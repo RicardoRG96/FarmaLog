@@ -142,11 +142,16 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void DireccionDespacho_ShouldThrow_When_TheCharacterAfterThe_D_IsLessThanOne()
+        [DataRow("23-77890367KD0")]
+        [DataRow("23-77890367KD-1")]
+        [DataRow("23-77890367KD-2")]
+        [DataRow("23-77890367KD-120")]
+        public void DireccionDespacho_ShouldThrow_When_TheCharacterAfterThe_D_IsLessThanOne(
+            string direccion)
         {
             //Act + Assert
             Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
-                () => DireccionDespacho.Create("23-77890367KD0"));
+                () => DireccionDespacho.Create(direccion));
         }
     }
 }
