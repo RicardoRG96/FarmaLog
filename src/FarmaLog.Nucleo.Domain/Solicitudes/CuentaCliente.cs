@@ -16,6 +16,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public static CuentaCliente Create(string cuenta)
         {
+            cuenta = cuenta.ToUpper();
+
             string[] splitCuentaCliente = cuenta.Split('-');
 
             VerifyForCorrectDashFormat(splitCuentaCliente);
@@ -29,8 +31,6 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 throw new CuentaClienteInvalidaException(
                     "La cuenta de cliente debe tener un Rut válido");
             }
-
-            cuenta = cuenta.ToUpper();
 
             return new CuentaCliente(codigo, cuenta);
         }

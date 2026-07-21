@@ -31,7 +31,6 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
         [TestMethod]
         [DataRow("2377-8903671D1")]
-        [DataRow("2377890-3671D1")]
         [DataRow("23778-903671D112")]
         [DataRow("23778903671D112-")]
         [DataRow("-23778903671D112")]
@@ -160,6 +159,19 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
                 () => DireccionDespacho.Create("23-77890367KD"));
+        }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldConstruct_When_ADireccionDespachoHasACodigoLaboratorioWithALengthOf_3_OrMore()
+        {
+            //Arrange
+            string expected = "237-78903671D1";
+
+            //Act
+            DireccionDespacho direccionDespacho = DireccionDespacho.Create("237-78903671D1");
+
+            //Assert
+            Assert.AreEqual(expected, direccionDespacho.Direccion);
         }
     }
 }

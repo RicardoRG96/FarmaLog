@@ -1,6 +1,4 @@
-﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
-
-namespace FarmaLog.Nucleo.Domain.Common
+﻿namespace FarmaLog.Nucleo.Domain.Common
 {
     public static class RutValidation
     {
