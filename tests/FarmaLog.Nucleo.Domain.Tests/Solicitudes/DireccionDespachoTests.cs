@@ -103,5 +103,17 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, direccionDespacho.Direccion);
         }
+
+        [TestMethod]
+        [DataRow("23-77890367QD1")]
+        [DataRow("23-77890367$D1")]
+        [DataRow("23-77890367.D1")]
+        public void DireccionDespacho_ShouldThrow_When_ARutHasNotANumberOrALetterKAsDigitoVerificador(
+            string direccion)
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
+                () => DireccionDespacho.Create(direccion));
+        }
     }
 }
