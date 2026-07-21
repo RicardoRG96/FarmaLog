@@ -153,5 +153,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
                 () => DireccionDespacho.Create(direccion));
         }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldThrow_When_AreNoCharactersAfterThe_D()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
+                () => DireccionDespacho.Create("23-77890367KD"));
+        }
     }
 }
