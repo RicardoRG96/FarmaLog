@@ -22,37 +22,11 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             string rutCliente = direccion.Split('-')[1].Split('D')[0];
 
-            VerifyRutHasAValidLength(rutCliente);
+            VerifyRutHasAValidFormat(rutCliente);
 
             CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(direccion);
 
-            if (!RutValidation.IsValidRutFormat(rutCliente))
-            {
-                throw new DireccionDespachoInvalidaException(
-                    "La dirección de despacho debe tener un Rut válido");
-            }
-
-            try
-            {
-                string direccionCounter = direccion.Split('-')[1].Split('D')[1];
-
-                bool theCounterHasOnlyDigits = direccionCounter.All(x => char.IsAsciiDigit(x));
-
-                if (!theCounterHasOnlyDigits)
-                    throw new DireccionDespachoInvalidaException(
-                        "La dirección de despacho es inválida");
-
-                bool counterHasLeadingZero = direccionCounter[0] == '0';
-
-                if (counterHasLeadingZero)
-                    throw new DireccionDespachoInvalidaException(
-                        "La dirección de despacho es inválida");
-            } 
-            catch (IndexOutOfRangeException)
-            {
-                throw new DireccionDespachoInvalidaException(
-                    "La dirección de despacho es inválida");
-            }
+            ValidateDireccionCounterFormat(direccion);
 
             return new DireccionDespacho(codigo, direccion);
         }
@@ -64,6 +38,17 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             if (!direccion.Contains('D'))
                 throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+        }
+
+        private static void VerifyRutHasAValidFormat(string rutCliente)
+        {
+            VerifyRutHasAValidLength(rutCliente);
+
+            if (!RutValidation.IsValidRutFormat(rutCliente))
+            {
+                throw new DireccionDespachoInvalidaException(
+                    "La dirección de despacho debe tener un Rut válido");
+            }
         }
 
         private static void VerifyRutHasAValidLength(string rutCliente)
@@ -88,6 +73,31 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             }
 
             return codigo;
+        }
+
+        private static void ValidateDireccionCounterFormat(string direccion)
+        {
+            try
+            {
+                string direccionCounter = direccion.Split('-')[1].Split('D')[1];
+
+                bool theCounterHasOnlyDigits = direccionCounter.All(x => char.IsAsciiDigit(x));
+
+                if (!theCounterHasOnlyDigits)
+                    throw new DireccionDespachoInvalidaException(
+                        "La dirección de despacho es inválida");
+
+                bool counterHasLeadingZero = direccionCounter[0] == '0';
+
+                if (counterHasLeadingZero)
+                    throw new DireccionDespachoInvalidaException(
+                        "La dirección de despacho es inválida");
+            }
+            catch (IndexOutOfRangeException)
+            {
+                throw new DireccionDespachoInvalidaException(
+                    "La dirección de despacho es inválida");
+            }
         }
     }
 }
