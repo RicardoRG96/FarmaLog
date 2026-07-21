@@ -39,6 +39,14 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 throw new DireccionDespachoInvalidaException(ex.Message);
             }
 
+            string rutClienteWithoutDigitoVerificador = rutCliente[..^1];
+
+            bool rutClienteWithoutDigitoVerificadorContainsOnlyDigits =
+                rutClienteWithoutDigitoVerificador.All(x => char.IsAsciiDigit(x));
+
+            if (!rutClienteWithoutDigitoVerificadorContainsOnlyDigits)
+                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+
             return new DireccionDespacho(CodigoLaboratorio.Create("23"), "23-778903671D1");
         }
     }

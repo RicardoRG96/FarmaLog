@@ -71,5 +71,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, direccionDespacho.Direccion);
         }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldThrow_When_RutDoesNotContainsOnlyDigitsExceptTheLastOneChar()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
+                () => DireccionDespacho.Create("23-7789HJ671D1"));
+        }
     }
 }
