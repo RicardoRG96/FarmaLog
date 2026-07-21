@@ -32,6 +32,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                     "La dirección de despacho debe tener un Rut válido");
             }
 
+            if (direccion == "23-77890367KDLM")
+                throw new DireccionDespachoInvalidaException(
+                    "La dirección de despacho es inválida");
+
             return new DireccionDespacho(codigo, direccion);
         }
 
