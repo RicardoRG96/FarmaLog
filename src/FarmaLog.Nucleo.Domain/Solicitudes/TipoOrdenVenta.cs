@@ -13,8 +13,11 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             Tipo = tipo;
         }
 
-        public static TipoOrdenVenta Create(string tipoOrden)
+        public static TipoOrdenVenta Create(string? tipoOrden)
         {
+            if (string.IsNullOrWhiteSpace(tipoOrden))
+                throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
+
             string codigoLaboratorioPrefix = tipoOrden.Split("F")[0];
 
             CodigoLaboratorio codigo;

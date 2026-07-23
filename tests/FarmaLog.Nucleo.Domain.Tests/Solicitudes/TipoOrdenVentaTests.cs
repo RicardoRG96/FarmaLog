@@ -7,6 +7,30 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     public class TipoOrdenVentaTests
     {
         [TestMethod]
+        public void TipoOrdenVenta_ShouldThrow_When_AnEmptyStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
+                () => TipoOrdenVenta.Create(""));
+        }
+
+        [TestMethod]
+        public void TipoOrdenVenta_ShouldThrow_When_NullIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
+                () => TipoOrdenVenta.Create(null));
+        }
+
+        [TestMethod]
+        public void TipoOrdenVenta_ShouldThrow_When_AWhiteSpaceStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
+                () => TipoOrdenVenta.Create("   "));
+        }
+
+        [TestMethod]
         [DataRow("BI")]
         [DataRow("A1")]
         [DataRow("1")]
