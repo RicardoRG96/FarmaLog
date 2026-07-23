@@ -39,6 +39,14 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
+        public void TipoOrdenVenta_ShouldThrow_When_TheLetterOfTipoOrdenIsNot_F_Or_G()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
+                () => TipoOrdenVenta.Create("23C5"));
+        }
+
+        [TestMethod]
         [DataRow("BI")]
         [DataRow("A1")]
         [DataRow("1")]
