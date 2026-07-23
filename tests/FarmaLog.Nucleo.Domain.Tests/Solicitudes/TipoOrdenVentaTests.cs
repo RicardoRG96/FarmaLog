@@ -31,6 +31,14 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
+        public void TipoOrdenVenta_ShouldThrow_When_TheLetterOfTipoOrdenIsNotPresent()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
+                () => TipoOrdenVenta.Create("231"));
+        }
+
+        [TestMethod]
         [DataRow("BI")]
         [DataRow("A1")]
         [DataRow("1")]
