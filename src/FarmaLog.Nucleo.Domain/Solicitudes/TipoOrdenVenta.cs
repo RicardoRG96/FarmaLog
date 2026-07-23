@@ -1,4 +1,6 @@
-﻿namespace FarmaLog.Nucleo.Domain.Solicitudes
+﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
+
+namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed record TipoOrdenVenta
     {
@@ -13,6 +15,19 @@
 
         public static TipoOrdenVenta Create(string tipoOrden)
         {
+            string codigoLaboratorioPrefix = tipoOrden.Split("F")[0];
+
+            CodigoLaboratorio codigo;
+
+            try
+            {
+                codigo = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
+            } 
+            catch (CodigoLaboratorioInvalidoException ex)
+            {
+                throw new TipoOrdenVentaInvalidoException(ex.Message);
+            }
+
             return new TipoOrdenVenta(
                 CodigoLaboratorio.Create("23"), "23F1");
         }
