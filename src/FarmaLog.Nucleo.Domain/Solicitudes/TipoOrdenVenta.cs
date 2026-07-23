@@ -20,11 +20,13 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             tipoOrden = tipoOrden.ToUpper();
 
-            if (!tipoOrden.Contains('F') ||
+            if (!tipoOrden.Contains('F') &&
                 !tipoOrden.Contains('G'))
                 throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
 
-            string codigoLaboratorioPrefix = tipoOrden.Split("F")[0];
+            //agregar validacion para ver si hay algo despues de la letra.
+
+            string codigoLaboratorioPrefix = tipoOrden.Split('F')[0]; //revisar con la letra 'G'
 
             CodigoLaboratorio codigo;
 
