@@ -43,10 +43,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             if (!areTheCharactersAfterTheLetterValid)
                 throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
 
-            string codigoLaboratorioPrefix = 
-                tipoOrdenContainsLetterF ? tipoOrden.Split('F')[0] : tipoOrden.Split('G')[0];
-
-            bool test = tipoOrden.Length > 1;
+            string codigoLaboratorioPrefix = splitTipoOrden[0];
 
             CodigoLaboratorio codigo;
 
