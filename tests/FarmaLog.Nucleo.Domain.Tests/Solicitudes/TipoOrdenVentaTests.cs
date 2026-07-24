@@ -62,11 +62,17 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void TipoOrdenVenta_ShouldThrow_When_ThereIsNothingAfterTheLetterOfTipoOrden()
+        [DataRow("23F")]
+        [DataRow("23G")]
+        [DataRow("23C")]
+        [DataRow("23D")]
+        [DataRow("23P")]
+        public void TipoOrdenVenta_ShouldThrow_When_ThereIsNothingAfterTheLetterOfTipoOrden(
+            string tipoOrden)
         {
             //Act + Assert
             Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
-                () => TipoOrdenVenta.Create("23F"));
+                () => TipoOrdenVenta.Create(tipoOrden));
         }
     }
 }
