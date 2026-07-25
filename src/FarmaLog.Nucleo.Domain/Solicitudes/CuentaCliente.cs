@@ -14,9 +14,12 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             Cuenta = cuenta;
         }
 
-        public static CuentaCliente Create(string cuenta)
+        public static CuentaCliente Create(string? cuenta)
         {
-            cuenta = cuenta.ToUpper();
+            if (string.IsNullOrWhiteSpace(cuenta))
+                throw new CuentaClienteInvalidaException("La cuenta de cliente deber ser válida");
+
+            cuenta = cuenta.Trim().ToUpper();
 
             string[] splitCuentaCliente = cuenta.Split('-');
 

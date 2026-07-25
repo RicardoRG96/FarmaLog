@@ -82,5 +82,55 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<CuentaClienteInvalidaException>(
                 () => CuentaCliente.Create(cuentaCliente));
         }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldThrow_When_AnEmptyStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
+                () => CuentaCliente.Create(""));
+        }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldThrow_When_NullIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
+                () => CuentaCliente.Create(null));
+        }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldThrow_When_AWhiteSpaceStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
+                () => CuentaCliente.Create("    "));
+        }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldConstruct_When_AValidStringWithWhiteSpacesIsPassed()
+        {
+            //Arrange
+            string expected = "23-077890367K";
+
+            //Act
+            CuentaCliente cuentaCliente = CuentaCliente.Create("    23-077890367K   ");
+
+            //Assert
+            Assert.AreEqual(expected, cuentaCliente.Cuenta);
+        }
+
+        [TestMethod]
+        public void CuentaCliente_ShouldConstructAndNormalize_WhenAValidStringWithWhiteSpacesAndLowerCaseLetterDIsPassed()
+        {
+            //Arrange
+            string expected = "23-077890367K";
+
+            //Act
+            CuentaCliente cuentaCliente = CuentaCliente.Create("    23-077890367k   ");
+
+            //Assert
+            Assert.AreEqual(expected, cuentaCliente.Cuenta);
+        }
     }
 }
