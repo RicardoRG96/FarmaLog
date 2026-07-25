@@ -181,5 +181,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, tipoOrdenVenta.Tipo);
         }
+
+        [TestMethod]
+        public void TipoOrdenVenta_ShouldThrow_When_AStringWithIntermediateSpacesIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
+                () => TipoOrdenVenta.Create("23 F1"));
+        }
     }
 }
