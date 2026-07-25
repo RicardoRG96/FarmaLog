@@ -155,5 +155,31 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
                 () => TipoOrdenVenta.Create("F1"));
         }
+
+        [TestMethod]
+        public void TipoOrdenVenta_ShouldConstruct_When_AValidStringWithWhiteSpacesIsPassed()
+        {
+            //Arrange
+            string expected = "23F1";
+
+            //Act
+            TipoOrdenVenta tipoOrdenVenta = TipoOrdenVenta.Create("  23F1  ");
+
+            //Assert
+            Assert.AreEqual(expected, tipoOrdenVenta.Tipo);
+        }
+
+        [TestMethod]
+        public void TipoOrdenVenta_ShouldConstructAndNormalize_WhenAValidStringWithWhiteSpacesAndLowerCaseLetterIsPassed()
+        {
+            //Arrange
+            string expected = "23F1";
+
+            //Act
+            TipoOrdenVenta tipoOrdenVenta = TipoOrdenVenta.Create("  23f1  ");
+
+            //Assert
+            Assert.AreEqual(expected, tipoOrdenVenta.Tipo);
+        }
     }
 }
