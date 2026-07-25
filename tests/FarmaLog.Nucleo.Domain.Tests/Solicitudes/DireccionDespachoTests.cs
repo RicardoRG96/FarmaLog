@@ -173,5 +173,55 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, direccionDespacho.Direccion);
         }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldThrow_When_AnEmptyStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
+                () => DireccionDespacho.Create(""));
+        }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldThrow_When_NullIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
+                () => DireccionDespacho.Create(null));
+        }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldThrow_When_AWhiteSpaceStringIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
+                () => DireccionDespacho.Create("   "));
+        }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldConstruct_When_AValidStringWithWhiteSpacesIsPassed()
+        {
+            //Arrange
+            string expected = "237-78903671D1";
+
+            //Act
+            DireccionDespacho direccionDespacho = DireccionDespacho.Create("   237-78903671D1   ");
+
+            //Assert
+            Assert.AreEqual(expected, direccionDespacho.Direccion);
+        }
+
+        [TestMethod]
+        public void DireccionDespacho_ShouldConstructAndNormalize_WhenAValidStringWithWhiteSpacesAndLowerCaseLetterDIsPassed()
+        {
+            //Arrange
+            string expected = "237-78903671D1";
+
+            //Act
+            DireccionDespacho direccionDespacho = DireccionDespacho.Create("   237-78903671d1   ");
+
+            //Assert
+            Assert.AreEqual(expected, direccionDespacho.Direccion);
+        }
     }
 }

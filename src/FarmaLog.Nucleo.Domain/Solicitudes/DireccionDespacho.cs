@@ -14,9 +14,12 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             Direccion = direccion;
         }
 
-        public static DireccionDespacho Create(string direccion)
+        public static DireccionDespacho Create(string? direccion)
         {
-            direccion = direccion.ToUpper();
+            if (string.IsNullOrWhiteSpace(direccion))
+                throw new DireccionDespachoInvalidaException("La dirección de despacho es inválida");
+
+            direccion = direccion.Trim().ToUpper();
 
             VerifyDireccionContainsDashAndLetterD(direccion);
 
