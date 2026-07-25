@@ -6,17 +6,26 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
     {
         public bool EsCenabast { get; }
         public DocumentoVentaCenabast? DocumentoVentaCenabast { get; }
+        public IReadOnlyCollection<LineaSolicitud> Lineas { get; }
 
         private SolicitudDeIngresoPedido(
-            bool esCenabast, DocumentoVentaCenabast? documentoVentaCenabast)
+            bool esCenabast, 
+            DocumentoVentaCenabast? documentoVentaCenabast,
+            IReadOnlyCollection<LineaSolicitud> lineas)
         {
             EsCenabast = esCenabast;
             DocumentoVentaCenabast = documentoVentaCenabast;
+            Lineas = lineas;
         }
 
         public static SolicitudDeIngresoPedido Create(
-            bool esCenabast, DocumentoVentaCenabast? documentoVentaCenabast)
+            bool esCenabast, 
+            DocumentoVentaCenabast? documentoVentaCenabast,
+            IReadOnlyCollection<LineaSolicitud> lineas)
         {
+            if (lineas.Count < 1)
+                throw new SolicitudConLineasInvalidasException("El pedido debe tener al menos una línea");
+
             bool esCoherenteConCenabast = esCenabast == (documentoVentaCenabast is not null);
 
             if (!esCoherenteConCenabast)
@@ -25,7 +34,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                     "La información proporcionada respecto a Cenabast es incoherente");
             }
 
-            return new SolicitudDeIngresoPedido(esCenabast, documentoVentaCenabast);
+            return new SolicitudDeIngresoPedido(esCenabast, documentoVentaCenabast, lineas);
         }
     }
 }
