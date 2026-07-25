@@ -46,17 +46,22 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         private static void VerifyForValidCharactersAfterTheLetter(string[] splitTipoOrden)
         {
-            bool containsOnlyNumbersAfterTheLetter =
-                splitTipoOrden[1].All(x => char.IsAsciiDigit(x));
+            string charactersAfterTheLetter = splitTipoOrden[1];
 
-            bool containsNothingOrALeadingZeroAfterTheLetter = splitTipoOrden[1] == "" || splitTipoOrden[1][0] == '0';
+            if (string.IsNullOrEmpty(charactersAfterTheLetter))
+                throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
 
-            bool areTheCharactersAfterTheLetterValid =
-                splitTipoOrden.Length == 2 &&
-                containsOnlyNumbersAfterTheLetter &&
-                !containsNothingOrALeadingZeroAfterTheLetter;
+            char firstCharacterAfterTheLetter = splitTipoOrden[1][0];
 
-            if (!areTheCharactersAfterTheLetterValid)
+            bool splitTipoOrdenHaveACorrectLength = splitTipoOrden.Length == 2;
+
+            if (!charactersAfterTheLetter.All(char.IsAsciiDigit))
+                throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
+
+            if (firstCharacterAfterTheLetter == '0')
+                throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
+
+            if (!splitTipoOrdenHaveACorrectLength)
                 throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
         }
 

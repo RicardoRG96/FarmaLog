@@ -58,7 +58,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Act + Assert
             Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
-                () => TipoOrdenVenta.Create(codigoLaboratorio));
+                () => TipoOrdenVenta.Create(formatedTipoOrdenVenta));
         }
 
         [TestMethod]
