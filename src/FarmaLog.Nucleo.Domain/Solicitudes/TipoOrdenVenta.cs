@@ -26,6 +26,11 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             string[] splitTipoOrden = tipoOrden.Split(_validTipoOrdenes);
 
+            bool splitTipoOrdenHaveACorrectLength = splitTipoOrden.Length == 2;
+
+            if (!splitTipoOrdenHaveACorrectLength)
+                throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
+
             VerifyForValidCharactersAfterTheLetter(splitTipoOrden);
 
             CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(splitTipoOrden);
@@ -53,15 +58,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             char firstCharacterAfterTheLetter = splitTipoOrden[1][0];
 
-            bool splitTipoOrdenHaveACorrectLength = splitTipoOrden.Length == 2;
-
             if (!charactersAfterTheLetter.All(char.IsAsciiDigit))
                 throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
 
             if (firstCharacterAfterTheLetter == '0')
-                throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
-
-            if (!splitTipoOrdenHaveACorrectLength)
                 throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
         }
 
