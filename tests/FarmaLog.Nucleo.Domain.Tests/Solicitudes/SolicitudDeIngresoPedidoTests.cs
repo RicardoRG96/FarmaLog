@@ -29,7 +29,6 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_EsCenabastIsTrueAndDocumentoVentaCenabastIsPresent()
         {
             //Arrange
-            string expected = "123456789";
             DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
 
             //Act
@@ -37,7 +36,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 true, documentoVentaCenabast);
 
             //Assert
-            Assert.AreEqual(expected, solicitudDeIngresoPedido.DocumentoVentaCenabast!.Documento);
+            Assert.AreSame(documentoVentaCenabast, solicitudDeIngresoPedido.DocumentoVentaCenabast);
+            Assert.IsTrue(solicitudDeIngresoPedido.EsCenabast);
         }
 
         [TestMethod]
@@ -48,7 +48,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 false, null);
 
             //Assert
-            Assert.IsNotNull(solicitudDeIngresoPedido);
+            Assert.IsNull(solicitudDeIngresoPedido.DocumentoVentaCenabast);
+            Assert.IsFalse(solicitudDeIngresoPedido.EsCenabast);
         }
     }
 }
