@@ -223,5 +223,20 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, direccionDespacho.Direccion);
         }
+
+        [TestMethod]
+        [DataRow("23- 77890367KD1")]
+        [DataRow("23 -77890367KD1")]
+        [DataRow("23-77890 367KD1")]
+        [DataRow("23-77890367 KD1")]
+        [DataRow("23-77890367K D1")]
+        [DataRow("23- 77890367KD 1")]
+        public void DireccionDespacho_ShouldThrow_When_AStringWithIntermediateSpacesIsPassed(
+            string direccion)
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<DireccionDespachoInvalidaException>(
+                () => DireccionDespacho.Create(direccion));
+        }
     }
 }
