@@ -118,7 +118,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void TipoOrdenVenta_ShouldConstruct_When_TheInputIsValidAndHasLowerCaseLetter()
+        public void TipoOrdenVenta_ShouldConstructAndNormalize_When_TheInputIsValidAndHasLowerCaseLetter()
         {
             //Arrange
             string expected = "23F1";
@@ -128,6 +128,24 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Assert
             Assert.AreEqual(expected, tipoOrdenVenta.Tipo);
+        }
+
+        [TestMethod]
+        [DataRow("23G6")]
+        [DataRow("23F1")]
+        [DataRow("23G8")]
+        [DataRow("23G3")]
+        public void TipoOrdenVenta__ShouldHave_ACorrectPopulatedCodigoLaboratorio_WhenIsBuilt(
+            string tipoOrden)
+        {
+            //Arrange
+            string expected = "23";
+
+            //Act
+            TipoOrdenVenta tipoOrdenVenta = TipoOrdenVenta.Create(tipoOrden);
+
+            //Assert
+            Assert.AreEqual(expected, tipoOrdenVenta.Codigo.Codigo);
         }
     }
 }
