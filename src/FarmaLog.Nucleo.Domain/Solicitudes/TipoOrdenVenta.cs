@@ -7,6 +7,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public CodigoLaboratorio Codigo { get; }
         public string Tipo { get; }
 
+        private static readonly char[] _validTipoOrdenes = ['F', 'G'];
+
         private TipoOrdenVenta(CodigoLaboratorio codigo, string tipo)
         {
             Codigo = codigo;
@@ -20,18 +22,30 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             tipoOrden = tipoOrden.Trim().ToUpper();
 
-            char[] validTipoOrdenes = ['F', 'G'];
+            VerifyTipoOrdenContainsTheValidLetters(tipoOrden);
 
-            bool tipoOrdenContainsLetterF = tipoOrden.Contains(validTipoOrdenes[0]);
+            string[] splitTipoOrden = tipoOrden.Split(_validTipoOrdenes);
 
-            bool tipoOrdenContainsLetterG = tipoOrden.Contains(validTipoOrdenes[1]);
+            VerifyForValidCharactersAfterTheLetter(splitTipoOrden);
+
+            CodigoLaboratorio codigo = VerifyForCorrectCodigoLaboratorioFormat(splitTipoOrden);
+
+            return new TipoOrdenVenta(codigo, tipoOrden);
+        }
+
+        private static void VerifyTipoOrdenContainsTheValidLetters(string tipoOrden)
+        {
+            bool tipoOrdenContainsLetterF = tipoOrden.Contains(_validTipoOrdenes[0]);
+
+            bool tipoOrdenContainsLetterG = tipoOrden.Contains(_validTipoOrdenes[1]);
 
             if (!tipoOrdenContainsLetterF &&
                 !tipoOrdenContainsLetterG)
                 throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
+        }
 
-            string[] splitTipoOrden = tipoOrden.Split(validTipoOrdenes);
-
+        private static void VerifyForValidCharactersAfterTheLetter(string[] splitTipoOrden)
+        {
             bool containsOnlyNumbersAfterTheLetter =
                 splitTipoOrden[1].All(x => char.IsAsciiDigit(x));
 
@@ -44,7 +58,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             if (!areTheCharactersAfterTheLetterValid)
                 throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
+        }
 
+        private static CodigoLaboratorio VerifyForCorrectCodigoLaboratorioFormat(string[] splitTipoOrden)
+        {
             string codigoLaboratorioPrefix = splitTipoOrden[0];
 
             CodigoLaboratorio codigo;
@@ -52,14 +69,13 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             try
             {
                 codigo = CodigoLaboratorio.Create(codigoLaboratorioPrefix);
-            } 
+            }
             catch (CodigoLaboratorioInvalidoException ex)
             {
                 throw new TipoOrdenVentaInvalidoException(ex.Message);
             }
 
-            return new TipoOrdenVenta(
-                CodigoLaboratorio.Create("23"), "23F1");
+            return codigo;
         }
     }
 }
