@@ -135,7 +135,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [DataRow("23F1")]
         [DataRow("23G8")]
         [DataRow("23G3")]
-        public void TipoOrdenVenta__ShouldHave_ACorrectPopulatedCodigoLaboratorio_WhenIsBuilt(
+        public void TipoOrdenVenta_ShouldHave_ACorrectPopulatedCodigoLaboratorio_WhenIsBuilt(
             string tipoOrden)
         {
             //Arrange
