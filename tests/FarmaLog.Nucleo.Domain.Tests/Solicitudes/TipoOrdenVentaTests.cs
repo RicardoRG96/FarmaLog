@@ -92,11 +92,29 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void TipoOrdenVenta_ShouldThrow_When_TheCharactersAfterTheLetterIsZero()
+        [DataRow("23F0")]
+        [DataRow("23G0")]
+        [DataRow("23C0")]
+        public void TipoOrdenVenta_ShouldThrow_When_TheCharactersAfterTheLetterIsZero(
+            string tipoOrden)
         {
             //Act + Assert
             Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
-                () => TipoOrdenVenta.Create("23F0"));
+                () => TipoOrdenVenta.Create(tipoOrden));
+        }
+
+        [TestMethod]
+        [DataRow("23F01")]
+        [DataRow("23F012")]
+        [DataRow("23G020")]
+        [DataRow("23G01")]
+        [DataRow("23C01")]
+        public void TipoOrdenVenta_ShouldThrow_When_TheCharactersAfterTheLetterHaveALeadingZero(
+            string tipoOrden)
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<TipoOrdenVentaInvalidoException>(
+                () => TipoOrdenVenta.Create(tipoOrden));
         }
     }
 }
