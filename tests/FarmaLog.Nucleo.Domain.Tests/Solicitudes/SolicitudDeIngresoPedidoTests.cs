@@ -13,5 +13,16 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<SolicitudIncoherenteRespectoACenabastException>(
                 () => SolicitudDeIngresoPedido.Create(true, null));
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_EsCenabastIsFalseButDocumentoVentaCenabastIsPresent()
+        {
+            //Arrange
+            DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
+
+            //Act + Assert
+            Assert.ThrowsExactly<SolicitudIncoherenteRespectoACenabastException>(
+                () => SolicitudDeIngresoPedido.Create(false, documentoVentaCenabast));
+        }
     }
 }

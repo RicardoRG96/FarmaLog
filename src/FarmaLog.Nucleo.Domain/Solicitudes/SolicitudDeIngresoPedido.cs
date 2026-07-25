@@ -17,10 +17,12 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public static SolicitudDeIngresoPedido Create(
             bool esCenabast, DocumentoVentaCenabast? documentoVentaCenabast)
         {
-            if (esCenabast && documentoVentaCenabast is null)
+            bool esCoherenteConCenabast = esCenabast == (documentoVentaCenabast is not null);
+
+            if (!esCoherenteConCenabast)
             {
                 throw new SolicitudIncoherenteRespectoACenabastException(
-                    "El documento de venta Cenabast es obligatorio");
+                    "La información proporcionada respecto a Cenabast es incoherente");
             }
 
             return new SolicitudDeIngresoPedido(esCenabast, documentoVentaCenabast);
