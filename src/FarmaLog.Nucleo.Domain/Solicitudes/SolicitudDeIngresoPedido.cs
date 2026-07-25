@@ -4,14 +4,14 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed class SolicitudDeIngresoPedido
     {
-        public bool EsCenabast { get; set; }
-        public DocumentoVentaCenabast? DVCenabast { get; set; }
+        public bool EsCenabast { get; }
+        public DocumentoVentaCenabast? DocumentoVentaCenabast { get; }
 
         private SolicitudDeIngresoPedido(
-            bool esCenabast, DocumentoVentaCenabast documentoVentaCenabast)
+            bool esCenabast, DocumentoVentaCenabast? documentoVentaCenabast)
         {
             EsCenabast = esCenabast;
-            DVCenabast = documentoVentaCenabast;
+            DocumentoVentaCenabast = documentoVentaCenabast;
         }
 
         public static SolicitudDeIngresoPedido Create(
@@ -19,7 +19,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         {
             if (esCenabast && documentoVentaCenabast is null)
             {
-                throw new SolicitudIncoherenteRespesctoACenabastException(
+                throw new SolicitudIncoherenteRespectoACenabastException(
                     "El documento de venta Cenabast es obligatorio");
             }
 

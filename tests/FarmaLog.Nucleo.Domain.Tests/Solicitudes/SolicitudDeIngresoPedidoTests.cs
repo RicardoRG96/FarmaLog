@@ -10,7 +10,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldThrow_When_EsCenabastIsTrueButDocumentoVentaCenabastIsNull()
         {
             //Act + Assert
-            Assert.ThrowsExactly<SolicitudIncoherenteRespesctoACenabastException>(
+            Assert.ThrowsExactly<SolicitudIncoherenteRespectoACenabastException>(
                 () => SolicitudDeIngresoPedido.Create(true, null));
         }
     }
