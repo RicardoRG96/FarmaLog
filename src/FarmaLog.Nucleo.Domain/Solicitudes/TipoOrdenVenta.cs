@@ -35,10 +35,12 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             bool containsOnlyNumbersAfterTheLetter =
                 splitTipoOrden[1].All(x => char.IsAsciiDigit(x));
 
+            bool containsNothingOrALeadingZeroAfterTheLetter = splitTipoOrden[1] == "" || splitTipoOrden[1][0] == '0';
+
             bool areTheCharactersAfterTheLetterValid =
                 splitTipoOrden.Length == 2 &&
-                splitTipoOrden[1] != "" &&
-                containsOnlyNumbersAfterTheLetter;
+                containsOnlyNumbersAfterTheLetter &&
+                !containsNothingOrALeadingZeroAfterTheLetter;
 
             if (!areTheCharactersAfterTheLetterValid)
                 throw new TipoOrdenVentaInvalidoException("El código del tipo de orden es inválido");
