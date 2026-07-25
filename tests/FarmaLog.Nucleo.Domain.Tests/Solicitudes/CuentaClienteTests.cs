@@ -132,5 +132,19 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, cuentaCliente.Cuenta);
         }
+
+        [TestMethod]
+        [DataRow("23- 077890367K")]
+        [DataRow("23 -077890367K")]
+        [DataRow("23-07789 0367K")]
+        [DataRow("23-077890367 K")]
+        [DataRow("23- 07789 0367K")]
+        public void CuentaCliente_ShouldThrow_When_AStringWithIntermediateSpacesIsPassed(
+            string cuentaCliente)
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CuentaClienteInvalidaException>(
+                () => CuentaCliente.Create(cuentaCliente));
+        }
     }
 }
