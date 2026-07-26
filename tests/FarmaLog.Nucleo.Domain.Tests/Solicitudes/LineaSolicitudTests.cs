@@ -7,11 +7,19 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     public class LineaSolicitudTests
     {
         [TestMethod]
-        public void LineaSolicitud_ShouldThrow_When_LineaSolicitudHasAQuantityOfZero()
+        public void LineaSolicitud_ShouldThrow_When_LineaHasAQuantityOfZero()
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
                 () => LineaSolicitud.Create("SKU-1", 0));
+        }
+
+        [TestMethod]
+        public void LineaSolicitud_ShouldThrow_When_LineaHasANegativeQuantity()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
+                () => LineaSolicitud.Create("SKU-1", -2));
         }
     }
 }
