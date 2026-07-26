@@ -19,8 +19,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 "SKU-1", 1, "DISPONIBLE", null) };
 
             //Act + Assert
-            Assert.ThrowsExactly<SolicitudIncoherenteRespectoACenabastException>(
-                () => SolicitudDeIngresoPedido.Create(true, null, lineas));
+            Assert.ThrowsExactly<SolicitudInvalidaException>(
+                () => SolicitudDeIngresoPedido.Create(true, null, lineas, null));
         }
 
         [TestMethod]
@@ -34,8 +34,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
 
             //Act + Assert
-            Assert.ThrowsExactly<SolicitudIncoherenteRespectoACenabastException>(
-                () => SolicitudDeIngresoPedido.Create(false, documentoVentaCenabast, lineas));
+            Assert.ThrowsExactly<SolicitudInvalidaException>(
+                () => SolicitudDeIngresoPedido.Create(false, documentoVentaCenabast, lineas, null));
         }
 
         [TestMethod]
@@ -49,7 +49,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Act
             SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(
-                true, documentoVentaCenabast, lineas);
+                true, documentoVentaCenabast, lineas, null);
 
             //Assert
             Assert.AreSame(documentoVentaCenabast, solicitudDeIngresoPedido.DocumentoVentaCenabast);
@@ -65,7 +65,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Act
             SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(
-                false, null, lineas);
+                false, null, lineas, null);
 
             //Assert
             Assert.IsNull(solicitudDeIngresoPedido.DocumentoVentaCenabast);
@@ -76,8 +76,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldThrow_When_LineasAreEmpty()
         {
             //Act + Assert
-            Assert.ThrowsExactly<SolicitudConLineasInvalidasException>(
-                () => SolicitudDeIngresoPedido.Create(false, null, Array.Empty<LineaSolicitud>()));
+            Assert.ThrowsExactly<SolicitudInvalidaException>(
+                () => SolicitudDeIngresoPedido.Create(false, null, Array.Empty<LineaSolicitud>(), null));
         }
 
         [TestMethod]
@@ -87,8 +87,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(16);
 
             //Act + Assert
-            Assert.ThrowsExactly<SolicitudConLineasInvalidasException>(
-                () => SolicitudDeIngresoPedido.Create(false, null, lineas));
+            Assert.ThrowsExactly<SolicitudInvalidaException>(
+                () => SolicitudDeIngresoPedido.Create(false, null, lineas, null));
         }
 
         [TestMethod]
@@ -99,11 +99,23 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Act
             SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(
-                false, null, lineas);
+                false, null, lineas, null);
 
             //Assert
             Assert.IsNotNull(solicitudDeIngresoPedido);
             Assert.HasCount(15, solicitudDeIngresoPedido.Lineas);
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_ObservacionHasMoreThan300Characters()
+        {
+            //Arrange
+            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
+            string observacion = new string('A', 301);
+
+            //Act + Assert
+            Assert.ThrowsExactly<SolicitudInvalidaException>(
+                () => SolicitudDeIngresoPedido.Create(false, null, lineas, observacion));
         }
     }
 }

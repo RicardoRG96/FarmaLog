@@ -2,9 +2,9 @@
 
 namespace FarmaLog.Nucleo.Domain.Solicitudes.Exceptions
 {
-    public class SolicitudConLineasInvalidasException : DomainException
+    public class SolicitudInvalidaException : DomainException
     {
-        public SolicitudConLineasInvalidasException(string message) 
+        public SolicitudInvalidaException(string message) 
             : base(message) {}
     }
 }
