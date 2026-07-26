@@ -16,7 +16,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         }
 
         public static LineaSolicitud Create(
-            string? sku, int cantidad, string estadoInventario)
+            string? sku, int cantidad, string? estadoInventario)
         {
             if (cantidad <= 0)
                 throw new LineaSolicitudInvalidaException("La cantidad debe ser mayor a cero");
