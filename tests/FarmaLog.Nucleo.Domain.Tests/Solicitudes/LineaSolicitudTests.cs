@@ -29,5 +29,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
                 () => LineaSolicitud.Create("", 1));
         }
+
+        [TestMethod]
+        public void LineaSolicitud_ShouldThrow_When_SkuIsWhiteSpace()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
+                () => LineaSolicitud.Create("  ", 1));
+        }
     }
 }
