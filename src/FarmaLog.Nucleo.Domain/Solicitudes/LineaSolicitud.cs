@@ -24,7 +24,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             if (string.IsNullOrWhiteSpace(sku))
                 throw new LineaSolicitudInvalidaException("El SKU es obligatorio");
 
-            if (estadoInventario == "")
+            if (string.IsNullOrWhiteSpace(estadoInventario))
                 throw new LineaSolicitudInvalidaException("El Estado de Inventario es obligatorio");
 
             return new LineaSolicitud(sku, cantidad, estadoInventario);
