@@ -8,7 +8,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     {
         private static IReadOnlyCollection<LineaSolicitud> CrearLineas(int cantidad) =>
             Enumerable.Range(1, cantidad)
-                .Select(i => LineaSolicitud.Create($"SKU-{i}", "DISPONIBLE", 1, null))
+                .Select(i => LineaSolicitud.Create($"SKU-{i}", 1))
                 .ToArray();
 
         [TestMethod]
@@ -16,7 +16,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", "DISPONIBLE", 1, null) };
+                "SKU-1", 1) };
 
             //Act + Assert
             Assert.ThrowsExactly<SolicitudIncoherenteRespectoACenabastException>(
@@ -28,7 +28,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", "DISPONIBLE", 1, null) };
+                "SKU-1", 1) };
 
             //Arrange
             DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
@@ -45,7 +45,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
             
             IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", "DISPONIBLE", 1, null) };
+                "SKU-1", 1) };
 
             //Act
             SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(
@@ -61,7 +61,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", "DISPONIBLE", 1, null) };
+                "SKU-1", 1) };
 
             //Act
             SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(

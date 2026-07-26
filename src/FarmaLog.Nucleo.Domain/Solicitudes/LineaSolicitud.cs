@@ -1,24 +1,26 @@
-﻿namespace FarmaLog.Nucleo.Domain.Solicitudes
+﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
+
+namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed class LineaSolicitud
     {
         public string Sku { get; }
-        public string EstadoInventario { get; }
         public int Cantidad { get; }
-        public string? NumeroLote { get; }
 
-        private LineaSolicitud(string sku, string estadoInventario, int cantidad, string? numeroLote)
+        private LineaSolicitud(string sku, int cantidad)
         {
             Sku = sku;
-            EstadoInventario = estadoInventario;
             Cantidad = cantidad;
-            NumeroLote = numeroLote;
         }
 
         public static LineaSolicitud Create(
-            string sku, string estadoInventario, int cantidad, string? numeroLote)
+            string sku, int cantidad)
         {
-            return new LineaSolicitud(sku, estadoInventario, cantidad, numeroLote);
+            if (cantidad <= 0)
+                throw new LineaSolicitudInvalidaException(
+                    "La cantidad debe ser mayor a cero");
+
+            return new LineaSolicitud(sku, cantidad);
         }
     }
 }
