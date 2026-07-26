@@ -117,5 +117,22 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<SolicitudInvalidaException>(
                 () => SolicitudDeIngresoPedido.Create(false, null, lineas, observacion));
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstruct_When_ObservacionHas300Characters()
+        {
+            //Arrange
+            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
+            string observacion = new string('A', 300);
+
+            //Act
+            SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(
+                false, null, lineas, observacion);
+
+            //Assert
+            Assert.IsNotNull(solicitudDeIngresoPedido);
+            Assert.IsNotNull(solicitudDeIngresoPedido.Observacion);
+            Assert.HasCount(300, solicitudDeIngresoPedido.Observacion);
+        }
     }
 }

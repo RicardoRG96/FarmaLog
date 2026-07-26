@@ -5,7 +5,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
     public sealed class SolicitudDeIngresoPedido
     {
         private const int MaximoDeLineasPermitidas = 15;
-        private const int MaximoDeCaracteresPermitidos = 300;
+        private const int MaximoDeCaracteresObservacion = 300;
         public bool EsCenabast { get; }
         public DocumentoVentaCenabast? DocumentoVentaCenabast { get; }
         public IReadOnlyCollection<LineaSolicitud> Lineas { get; }
@@ -43,7 +43,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                     "La información proporcionada respecto a Cenabast es incoherente");
             }
 
-            if (observacion is not null && observacion.Length > MaximoDeCaracteresPermitidos)
+            if (observacion is not null && observacion.Length > MaximoDeCaracteresObservacion)
                 throw new SolicitudInvalidaException(
                     "La observación del pedido no puede tener más de 300 caracteres");
 
