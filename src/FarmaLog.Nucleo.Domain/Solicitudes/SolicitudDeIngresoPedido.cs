@@ -4,6 +4,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
     public sealed class SolicitudDeIngresoPedido
     {
+        private const int MaximoDeLineasPermitidas = 15;
+
         public bool EsCenabast { get; }
         public DocumentoVentaCenabast? DocumentoVentaCenabast { get; }
         public IReadOnlyCollection<LineaSolicitud> Lineas { get; }
@@ -25,6 +27,9 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         {
             if (lineas.Count < 1)
                 throw new SolicitudConLineasInvalidasException("El pedido debe tener al menos una línea");
+
+            if (lineas.Count > MaximoDeLineasPermitidas)
+                throw new SolicitudConLineasInvalidasException("El pedido debe tener como máximo 15 líneas");
 
             bool esCoherenteConCenabast = esCenabast == (documentoVentaCenabast is not null);
 

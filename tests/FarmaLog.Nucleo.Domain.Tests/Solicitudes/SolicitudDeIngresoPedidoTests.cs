@@ -6,6 +6,11 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     [TestClass]
     public class SolicitudDeIngresoPedidoTests
     {
+        private static IReadOnlyCollection<LineaSolicitud> CrearLineas(int cantidad) =>
+            Enumerable.Range(1, cantidad)
+                .Select(i => LineaSolicitud.Create($"SKU-{i}", "DISPONIBLE", 1, null))
+                .ToArray();
+
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldThrow_When_EsCenabastIsTrueButDocumentoVentaCenabastIsNull()
         {
@@ -73,6 +78,17 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<SolicitudConLineasInvalidasException>(
                 () => SolicitudDeIngresoPedido.Create(false, null, Array.Empty<LineaSolicitud>()));
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_ThereAreMoreThan15Lineas()
+        {
+            //Arrange
+            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(16);
+
+            //Act + Assert
+            Assert.ThrowsExactly<SolicitudConLineasInvalidasException>(
+                () => SolicitudDeIngresoPedido.Create(false, null, lineas));
         }
     }
 }
