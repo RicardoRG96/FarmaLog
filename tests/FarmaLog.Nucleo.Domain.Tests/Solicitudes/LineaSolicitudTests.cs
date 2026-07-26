@@ -11,7 +11,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("SKU-1", 0, "DISPONIBLE"));
+                () => LineaSolicitud.Create("SKU-1", 0, "DISPONIBLE", null));
         }
 
         [TestMethod]
@@ -19,7 +19,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("SKU-1", -2, "DISPONIBLE"));
+                () => LineaSolicitud.Create("SKU-1", -2, "DISPONIBLE", null));
         }
 
         [TestMethod]
@@ -27,7 +27,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("", 1, "DISPONIBLE"));
+                () => LineaSolicitud.Create("", 1, "DISPONIBLE", null));
         }
 
         [TestMethod]
@@ -35,7 +35,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("  ", 1, "DISPONIBLE"));
+                () => LineaSolicitud.Create("  ", 1, "DISPONIBLE", null));
         }
 
         [TestMethod]
@@ -43,7 +43,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create(null, 1, "DISPONIBLE"));
+                () => LineaSolicitud.Create(null, 1, "DISPONIBLE", null));
         }
 
         [TestMethod]
@@ -51,7 +51,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("SKU-1", 1, ""));
+                () => LineaSolicitud.Create("SKU-1", 1, "", null));
         }
 
         [TestMethod]
@@ -59,7 +59,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("SKU-1", 1, "  "));
+                () => LineaSolicitud.Create("SKU-1", 1, "  ", null));
         }
 
         [TestMethod]
@@ -67,7 +67,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("SKU-1", 1, null));
+                () => LineaSolicitud.Create("SKU-1", 1, null, null));
         }
     }
 }
