@@ -90,5 +90,20 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<SolicitudConLineasInvalidasException>(
                 () => SolicitudDeIngresoPedido.Create(false, null, lineas));
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstruct_When_ThereAre15Lineas()
+        {
+            //Arrange
+            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(15);
+
+            //Act
+            SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(
+                false, null, lineas);
+
+            //Assert
+            Assert.IsNotNull(solicitudDeIngresoPedido);
+            Assert.HasCount(15, solicitudDeIngresoPedido.Lineas);
+        }
     }
 }
