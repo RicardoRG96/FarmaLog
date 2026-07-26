@@ -8,7 +8,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     {
         private static IReadOnlyCollection<LineaSolicitud> CrearLineas(int cantidad) =>
             Enumerable.Range(1, cantidad)
-                .Select(i => LineaSolicitud.Create($"SKU-{i}", 1))
+                .Select(i => LineaSolicitud.Create($"SKU-{i}", 1, "DISPONIBLE"))
                 .ToArray();
 
         [TestMethod]
@@ -16,7 +16,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", 1) };
+                "SKU-1", 1, "DISPONIBLE") };
 
             //Act + Assert
             Assert.ThrowsExactly<SolicitudIncoherenteRespectoACenabastException>(
@@ -28,7 +28,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", 1) };
+                "SKU-1", 1, "DISPONIBLE") };
 
             //Arrange
             DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
@@ -45,7 +45,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
             
             IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", 1) };
+                "SKU-1", 1, "DISPONIBLE") };
 
             //Act
             SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(
@@ -61,7 +61,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", 1) };
+                "SKU-1", 1, "DISPONIBLE") };
 
             //Act
             SolicitudDeIngresoPedido solicitudDeIngresoPedido = SolicitudDeIngresoPedido.Create(

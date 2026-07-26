@@ -11,7 +11,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("SKU-1", 0));
+                () => LineaSolicitud.Create("SKU-1", 0, "DISPONIBLE"));
         }
 
         [TestMethod]
@@ -19,7 +19,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("SKU-1", -2));
+                () => LineaSolicitud.Create("SKU-1", -2, "DISPONIBLE"));
         }
 
         [TestMethod]
@@ -27,7 +27,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("", 1));
+                () => LineaSolicitud.Create("", 1, "DISPONIBLE"));
         }
 
         [TestMethod]
@@ -35,7 +35,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create("  ", 1));
+                () => LineaSolicitud.Create("  ", 1, "DISPONIBLE"));
         }
 
         [TestMethod]
@@ -43,7 +43,15 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Act + Assert
             Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
-                () => LineaSolicitud.Create(null, 1));
+                () => LineaSolicitud.Create(null, 1, "DISPONIBLE"));
+        }
+
+        [TestMethod]
+        public void LineaSolicitud_ShouldThrow_When_EstadoInventarioIsEmpty()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<LineaSolicitudInvalidaException>(
+                () => LineaSolicitud.Create("SKU-1", 1, ""));
         }
     }
 }
