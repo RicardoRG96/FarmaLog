@@ -84,7 +84,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act
-            SolicitudDeIngresoPedido solicitudDeIngresoPedido = CrearSolicitud(
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
                 esCenabast: true, 
                 documentoVentaCenabast: documentoVentaCenabast, 
                 lineas: lineas, 
@@ -92,8 +92,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 hoy: hoy);
 
             //Assert
-            Assert.AreSame(documentoVentaCenabast, solicitudDeIngresoPedido.DocumentoVentaCenabast);
-            Assert.IsTrue(solicitudDeIngresoPedido.EsCenabast);
+            Assert.AreSame(documentoVentaCenabast, solicitud.DocumentoVentaCenabast);
+            Assert.IsTrue(solicitud.EsCenabast);
         }
 
         [TestMethod]
@@ -107,15 +107,15 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act
-            SolicitudDeIngresoPedido solicitudDeIngresoPedido = CrearSolicitud(
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
                 esCenabast: false, 
                 lineas: lineas, 
                 fechaEntrega: fechaEntrega, 
                 hoy: hoy);
 
             //Assert
-            Assert.IsNull(solicitudDeIngresoPedido.DocumentoVentaCenabast);
-            Assert.IsFalse(solicitudDeIngresoPedido.EsCenabast);
+            Assert.IsNull(solicitud.DocumentoVentaCenabast);
+            Assert.IsFalse(solicitud.EsCenabast);
         }
 
         [TestMethod]
@@ -161,15 +161,15 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act
-            SolicitudDeIngresoPedido solicitudDeIngresoPedido = CrearSolicitud(
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
                 esCenabast: false, 
                 lineas: lineas, 
                 fechaEntrega: fechaEntrega, 
                 hoy: hoy);
 
             //Assert
-            Assert.IsNotNull(solicitudDeIngresoPedido);
-            Assert.HasCount(15, solicitudDeIngresoPedido.Lineas);
+            Assert.IsNotNull(solicitud);
+            Assert.HasCount(15, solicitud.Lineas);
         }
 
         [TestMethod]
@@ -201,7 +201,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act
-            SolicitudDeIngresoPedido solicitudDeIngresoPedido = CrearSolicitud(
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
                 esCenabast: false,
                 lineas: lineas, 
                 observacion: observacion, 
@@ -209,9 +209,9 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 hoy: hoy);
 
             //Assert
-            Assert.IsNotNull(solicitudDeIngresoPedido);
-            Assert.IsNotNull(solicitudDeIngresoPedido.Observacion);
-            Assert.HasCount(300, solicitudDeIngresoPedido.Observacion);
+            Assert.IsNotNull(solicitud);
+            Assert.IsNotNull(solicitud.Observacion);
+            Assert.HasCount(300, solicitud.Observacion);
         }
 
         [TestMethod]
@@ -294,6 +294,27 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Assert
             Assert.AreEqual(hoy, solicitud.FechaEntregaSolicitada);
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstruct_When_NumeroDeliveryIsPresent()
+        {
+            //Arrange
+            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
+            DateOnly hoy = new DateOnly(2026, 7, 27);
+            DateOnly? fechaEntrega = null;
+            NumeroDelivery delivery = NumeroDelivery.Create("123456789");
+
+            //Act
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
+                esCenabast: false,
+                lineas: lineas,
+                fechaEntrega: fechaEntrega,
+                hoy: hoy,
+                delivery: delivery);
+
+            //Assert
+            Assert.AreSame(delivery, solicitud.Delivery);
         }
     }
 }
