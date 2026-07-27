@@ -8,6 +8,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     public class SolicitudDeIngresoPedidoTests
     {
         private static SolicitudDeIngresoPedido CrearSolicitud(
+            CodigoLaboratorio codigoLaboratorio = null,
+            CuentaCliente cuentaCliente = null,
+            DireccionDespacho direccionDespacho = null,
+            TipoOrdenVenta tipoOrdenVenta = null,
             bool esCenabast = false,
             DocumentoVentaCenabast? documentoVentaCenabast = null,
             IReadOnlyCollection<LineaSolicitud>? lineas = null,
@@ -18,6 +22,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             string? ordenCompra = null,
             bool urgencia = false)
             => SolicitudDeIngresoPedido.Create(
+                codigoLaboratorio ?? CodigoLaboratorio.Create("23"),
+                cuentaCliente ?? CuentaCliente.Create("23-0778903671"),
+                direccionDespacho ?? DireccionDespacho.Create("23-778903671D1"),
+                tipoOrdenVenta ?? TipoOrdenVenta.Create("23F1"),
                 esCenabast,
                 documentoVentaCenabast,
                 lineas ?? CrearLineas(1),
@@ -243,6 +251,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<ArgumentNullException>(
                 () => SolicitudDeIngresoPedido.Create(
+                    CodigoLaboratorio.Create("23"),
+                    CuentaCliente.Create("23-0778903671"),
+                    DireccionDespacho.Create("23-778903671D1"),
+                    TipoOrdenVenta.Create("23F1"),
                     false,
                     null,
                     CrearLineas(1),
@@ -260,6 +272,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<ArgumentNullException>(
                 () => SolicitudDeIngresoPedido.Create(
+                    CodigoLaboratorio.Create("23"),
+                    CuentaCliente.Create("23-0778903671"),
+                    DireccionDespacho.Create("23-778903671D1"),
+                    TipoOrdenVenta.Create("23F1"),
                     false,
                     null,
                     null,

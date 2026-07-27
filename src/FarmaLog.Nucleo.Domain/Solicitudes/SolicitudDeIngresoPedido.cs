@@ -7,6 +7,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         private const int MaximoDeLineasPermitidas = 15;
         private const int MaximoDeCaracteresObservacion = 300;
 
+        public CodigoLaboratorio CodigoLaboratorio { get; }
+        public CuentaCliente CuentaCliente { get; }
+        public DireccionDespacho DireccionDespacho { get; }
+        public TipoOrdenVenta TipoOrdenVenta { get; }
         public bool EsCenabast { get; }
         public DocumentoVentaCenabast? DocumentoVentaCenabast { get; }
         public IReadOnlyCollection<LineaSolicitud> Lineas { get; }
@@ -17,6 +21,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public bool Urgencia { get; }
 
         private SolicitudDeIngresoPedido(
+            CodigoLaboratorio codigoLaboratorio,
+            CuentaCliente cuentaCliente,
+            DireccionDespacho direccionDespacho,
+            TipoOrdenVenta tipoOrdenVenta,
             bool esCenabast,
             DocumentoVentaCenabast? documentoVentaCenabast,
             IReadOnlyCollection<LineaSolicitud> lineas,
@@ -26,6 +34,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             string? ordenCompra,
             bool urgencia)
         {
+            CodigoLaboratorio = codigoLaboratorio;
+            CuentaCliente = cuentaCliente;
+            DireccionDespacho = direccionDespacho;
+            TipoOrdenVenta = tipoOrdenVenta;
             EsCenabast = esCenabast;
             DocumentoVentaCenabast = documentoVentaCenabast;
             Lineas = lineas;
@@ -37,6 +49,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         }
 
         public static SolicitudDeIngresoPedido Create(
+            CodigoLaboratorio codigoLaboratorio,
+            CuentaCliente cuentaCliente,
+            DireccionDespacho direccionDespacho,
+            TipoOrdenVenta tipoOrdenVenta,
             bool esCenabast,
             DocumentoVentaCenabast? documentoVentaCenabast,
             IReadOnlyCollection<LineaSolicitud> lineas,
@@ -73,6 +89,9 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             DateOnly fechaEntregaFinal = fechaEntrega ?? hoy;
 
             return new SolicitudDeIngresoPedido(
+                codigoLaboratorio,
+                cuentaCliente,
+                direccionDespacho,tipoOrdenVenta,
                 esCenabast, 
                 documentoVentaCenabast, 
                 lineas, 
