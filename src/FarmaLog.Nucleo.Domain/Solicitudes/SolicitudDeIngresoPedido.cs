@@ -70,14 +70,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             ArgumentNullException.ThrowIfNull(numeroDelivery);
             ArgumentNullException.ThrowIfNull(lineas);
 
-            if (cuentaCliente.Codigo != codigoLaboratorio)
-                throw new SolicitudInvalidaException("La cuenta del cliente debe pertenecer al mismo laboratorio");
-
-            if (direccionDespacho.Codigo != codigoLaboratorio)
-                throw new SolicitudInvalidaException("La dirección de despacho debe pertenecer al mismo laboratorio");
-
-            if (tipoOrdenVenta.Codigo != codigoLaboratorio)
-                throw new SolicitudInvalidaException("El tipo de orden de venta debe pertenecer al mismo laboratorio");
+            VerificarPertenenciaAlLaboratorio(
+                codigoLaboratorio, cuentaCliente, direccionDespacho, tipoOrdenVenta);
 
             if (lineas.Count < 1)
                 throw new SolicitudInvalidaException("El pedido debe tener al menos una línea");
@@ -114,6 +108,22 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 numeroDelivery,
                 ordenCompra,
                 urgencia);
+        }
+
+        private static void VerificarPertenenciaAlLaboratorio(
+            CodigoLaboratorio codigoLaboratorio,
+            CuentaCliente cuentaCliente,
+            DireccionDespacho direccionDespacho,
+            TipoOrdenVenta tipoOrdenVenta)
+        {
+            if (cuentaCliente.Codigo != codigoLaboratorio)
+                throw new SolicitudInvalidaException("La cuenta del cliente debe pertenecer al mismo laboratorio");
+
+            if (direccionDespacho.Codigo != codigoLaboratorio)
+                throw new SolicitudInvalidaException("La dirección de despacho debe pertenecer al mismo laboratorio");
+
+            if (tipoOrdenVenta.Codigo != codigoLaboratorio)
+                throw new SolicitudInvalidaException("El tipo de orden de venta debe pertenecer al mismo laboratorio");
         }
     }
 }
