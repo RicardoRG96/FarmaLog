@@ -377,5 +377,25 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.IsTrue(solicitud.Urgencia);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstruct_When_UrgenciaIsFalse()
+        {
+            //Arrange
+            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
+            DateOnly hoy = new DateOnly(2026, 7, 27);
+            DateOnly? fechaEntrega = null;
+
+            //Act
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
+                esCenabast: false,
+                lineas: lineas,
+                fechaEntrega: fechaEntrega,
+                hoy: hoy,
+                urgencia: false);
+
+            //Assert
+            Assert.IsFalse(solicitud.Urgencia);
+        }
     }
 }
