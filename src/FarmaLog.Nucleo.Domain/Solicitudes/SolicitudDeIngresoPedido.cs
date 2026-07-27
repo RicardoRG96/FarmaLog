@@ -70,6 +70,9 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             ArgumentNullException.ThrowIfNull(numeroDelivery);
             ArgumentNullException.ThrowIfNull(lineas);
 
+            if (cuentaCliente.Codigo != codigoLaboratorio)
+                throw new SolicitudInvalidaException("La cuenta del cliente debe pertenecer al mismo laboratorio");
+
             if (lineas.Count < 1)
                 throw new SolicitudInvalidaException("El pedido debe tener al menos una línea");
 
@@ -95,7 +98,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             return new SolicitudDeIngresoPedido(
                 codigoLaboratorio,
                 cuentaCliente,
-                direccionDespacho,tipoOrdenVenta,
+                direccionDespacho,
+                tipoOrdenVenta,
                 esCenabast, 
                 documentoVentaCenabast, 
                 lineas, 

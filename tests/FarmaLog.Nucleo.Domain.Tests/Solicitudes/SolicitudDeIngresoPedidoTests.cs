@@ -370,5 +370,16 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                     null,
                     false));
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_CuentaClientePrefixIsDifferentFromCodigoLaboratorio()
+        {
+            //Arrange
+            CuentaCliente cuentaCliente = CuentaCliente.Create("41-0778903671");
+
+            //Act + Assert
+            Assert.ThrowsExactly<SolicitudInvalidaException>(
+                () => CrearSolicitud(cuentaCliente: cuentaCliente));
+        }
     }
 }
