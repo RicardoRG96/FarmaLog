@@ -65,6 +65,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         {
             ArgumentNullException.ThrowIfNull(codigoLaboratorio);
             ArgumentNullException.ThrowIfNull(cuentaCliente);
+            ArgumentNullException.ThrowIfNull(direccionDespacho);
             ArgumentNullException.ThrowIfNull(numeroDelivery);
             ArgumentNullException.ThrowIfNull(lineas);
 
