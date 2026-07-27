@@ -11,14 +11,14 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public DocumentoVentaCenabast? DocumentoVentaCenabast { get; }
         public IReadOnlyCollection<LineaSolicitud> Lineas { get; }
         public string? Observacion { get; }
-        public DateOnly? FechaEntregaSolicitada { get; }
+        public DateOnly FechaEntregaSolicitada { get; }
 
         private SolicitudDeIngresoPedido(
             bool esCenabast,
             DocumentoVentaCenabast? documentoVentaCenabast,
             IReadOnlyCollection<LineaSolicitud> lineas,
             string? observacion,
-            DateOnly? fechaEntregaSolicitada)
+            DateOnly fechaEntregaSolicitada)
         {
             EsCenabast = esCenabast;
             DocumentoVentaCenabast = documentoVentaCenabast;
@@ -55,8 +55,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 throw new SolicitudInvalidaException(
                     "La observación del pedido no puede tener más de 300 caracteres");
 
+            DateOnly fechaEntregaFinal = fechaEntrega ?? hoy;
+
             return new SolicitudDeIngresoPedido(
-                esCenabast, documentoVentaCenabast, lineas, observacion, fechaEntrega);
+                esCenabast, documentoVentaCenabast, lineas, observacion, fechaEntregaFinal);
         }
     }
 }
