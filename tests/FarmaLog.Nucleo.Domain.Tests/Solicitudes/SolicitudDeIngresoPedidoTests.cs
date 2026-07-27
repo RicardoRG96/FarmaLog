@@ -392,5 +392,16 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<SolicitudInvalidaException>(
                 () => CrearSolicitud(direccionDespacho: direccionDespacho));
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_TipoOrdenVentaPrefixIsDifferentFromCodigoLaboratorio()
+        {
+            //Arrange
+            TipoOrdenVenta tipoOrdenVenta = TipoOrdenVenta.Create("41F1");
+
+            //Act + Assert
+            Assert.ThrowsExactly<SolicitudInvalidaException>(
+                () => CrearSolicitud(tipoOrdenVenta: tipoOrdenVenta));
+        }
     }
 }

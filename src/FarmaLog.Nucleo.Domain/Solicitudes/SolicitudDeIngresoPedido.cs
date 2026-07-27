@@ -76,6 +76,9 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             if (direccionDespacho.Codigo != codigoLaboratorio)
                 throw new SolicitudInvalidaException("La dirección de despacho debe pertenecer al mismo laboratorio");
 
+            if (tipoOrdenVenta.Codigo != codigoLaboratorio)
+                throw new SolicitudInvalidaException("El tipo de orden de venta debe pertenecer al mismo laboratorio");
+
             if (lineas.Count < 1)
                 throw new SolicitudInvalidaException("El pedido debe tener al menos una línea");
 
