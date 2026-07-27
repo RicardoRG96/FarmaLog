@@ -12,7 +12,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public IReadOnlyCollection<LineaSolicitud> Lineas { get; }
         public string? Observacion { get; }
         public DateOnly FechaEntregaSolicitada { get; }
-        public NumeroDelivery Delivery { get; }
+        public NumeroDelivery NumeroDelivery { get; }
         public string? OrdenCompra { get; }
         public bool Urgencia { get; }
 
@@ -22,7 +22,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             IReadOnlyCollection<LineaSolicitud> lineas,
             string? observacion,
             DateOnly fechaEntregaSolicitada,
-            NumeroDelivery delivery,
+            NumeroDelivery numeroDelivery,
             string? ordenCompra,
             bool urgencia)
         {
@@ -31,7 +31,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             Lineas = lineas;
             Observacion = observacion;
             FechaEntregaSolicitada = fechaEntregaSolicitada;
-            Delivery = delivery;
+            NumeroDelivery = numeroDelivery;
             OrdenCompra = ordenCompra;
             Urgencia = urgencia;
         }
@@ -43,10 +43,12 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             string? observacion,
             DateOnly? fechaEntrega,
             DateOnly hoy,
-            NumeroDelivery delivery,
+            NumeroDelivery numeroDelivery,
             string? ordenCompra,
             bool urgencia)
         {
+            ArgumentNullException.ThrowIfNull(numeroDelivery);
+
             if (lineas.Count < 1)
                 throw new SolicitudInvalidaException("El pedido debe tener al menos una línea");
 
@@ -75,7 +77,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 lineas, 
                 observacion, 
                 fechaEntregaFinal,
-                delivery,
+                numeroDelivery,
                 ordenCompra,
                 urgencia);
         }

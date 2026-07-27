@@ -14,7 +14,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             string? observacion = null,
             DateOnly? fechaEntrega = null,
             DateOnly? hoy = null,
-            NumeroDelivery? NumeroDelivery = null,
+            NumeroDelivery? numeroDelivery = null,
             string? ordenCompra = null,
             bool urgencia = false)
             => SolicitudDeIngresoPedido.Create(
@@ -24,7 +24,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 observacion,
                 fechaEntrega,
                 hoy ?? new DateOnly(2026, 7, 27),
-                NumeroDelivery ?? NumeroDelivery.Create("123456789"),
+                numeroDelivery ?? NumeroDelivery.Create("123456789"),
                 ordenCompra,
                 urgencia);
 
@@ -198,10 +198,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             NumeroDelivery NumeroDelivery = NumeroDelivery.Create("123456789");
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(NumeroDelivery: NumeroDelivery);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(numeroDelivery: NumeroDelivery);
 
             //Assert
-            Assert.AreSame(NumeroDelivery, solicitud.Delivery);
+            Assert.AreSame(NumeroDelivery, solicitud.NumeroDelivery);
         }
 
         [TestMethod]
@@ -245,6 +245,23 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Assert
             Assert.IsFalse(solicitud.Urgencia);
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_NumeroDeliveryIsNull()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<ArgumentNullException>(
+                () => SolicitudDeIngresoPedido.Create(
+                    false,
+                    null,
+                    CrearLineas(1),
+                    null,
+                    null,
+                    new DateOnly(2026, 7, 27),
+                    null,
+                    null,
+                    false));
         }
     }
 }
