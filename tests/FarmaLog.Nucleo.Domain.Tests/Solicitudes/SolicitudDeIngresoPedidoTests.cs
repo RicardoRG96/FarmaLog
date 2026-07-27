@@ -214,5 +214,22 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(fechaEntrega, solicitud.FechaEntregaSolicitada);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstruct_When_FechaEntregaSolicitadaIsNull()
+        {
+            //Arrange
+            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
+            string observacion = new string('A', 100);
+            DateOnly hoy = new DateOnly(2026, 7, 27);
+            DateOnly? fechaEntrega = null;
+
+            //Act
+            SolicitudDeIngresoPedido solicitud = SolicitudDeIngresoPedido.Create(
+                false, null, lineas, observacion, fechaEntrega, hoy);
+
+            //Assert
+            Assert.IsNull(solicitud.FechaEntregaSolicitada);
+        }
     }
 }
