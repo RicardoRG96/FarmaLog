@@ -12,19 +12,28 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public IReadOnlyCollection<LineaSolicitud> Lineas { get; }
         public string? Observacion { get; }
         public DateOnly FechaEntregaSolicitada { get; }
+        public NumeroDelivery Delivery { get; }
+        public string? OrdenCompra { get; }
+        public bool Urgencia { get; }
 
         private SolicitudDeIngresoPedido(
             bool esCenabast,
             DocumentoVentaCenabast? documentoVentaCenabast,
             IReadOnlyCollection<LineaSolicitud> lineas,
             string? observacion,
-            DateOnly fechaEntregaSolicitada)
+            DateOnly fechaEntregaSolicitada,
+            NumeroDelivery delivery,
+            string? ordenCompra,
+            bool urgencia)
         {
             EsCenabast = esCenabast;
             DocumentoVentaCenabast = documentoVentaCenabast;
             Lineas = lineas;
             Observacion = observacion;
             FechaEntregaSolicitada = fechaEntregaSolicitada;
+            Delivery = delivery;
+            OrdenCompra = ordenCompra;
+            Urgencia = urgencia;
         }
 
         public static SolicitudDeIngresoPedido Create(
@@ -33,7 +42,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             IReadOnlyCollection<LineaSolicitud> lineas,
             string? observacion,
             DateOnly? fechaEntrega,
-            DateOnly hoy)
+            DateOnly hoy,
+            NumeroDelivery delivery,
+            string? ordenCompra,
+            bool urgencia)
         {
             if (lineas.Count < 1)
                 throw new SolicitudInvalidaException("El pedido debe tener al menos una línea");
@@ -58,7 +70,14 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             DateOnly fechaEntregaFinal = fechaEntrega ?? hoy;
 
             return new SolicitudDeIngresoPedido(
-                esCenabast, documentoVentaCenabast, lineas, observacion, fechaEntregaFinal);
+                esCenabast, 
+                documentoVentaCenabast, 
+                lineas, 
+                observacion, 
+                fechaEntregaFinal,
+                delivery,
+                ordenCompra,
+                urgencia);
         }
     }
 }
