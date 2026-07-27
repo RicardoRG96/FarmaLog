@@ -14,7 +14,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             string? observacion = null,
             DateOnly? fechaEntrega = null,
             DateOnly? hoy = null,
-            NumeroDelivery? delivery = null,
+            NumeroDelivery? NumeroDelivery = null,
             string? ordenCompra = null,
             bool urgencia = false)
             => SolicitudDeIngresoPedido.Create(
@@ -24,7 +24,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 observacion,
                 fechaEntrega,
                 hoy ?? new DateOnly(2026, 7, 27),
-                delivery,
+                NumeroDelivery ?? NumeroDelivery.Create("123456789"),
                 ordenCompra,
                 urgencia);
 
@@ -36,39 +36,20 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldThrow_When_EsCenabastIsTrueButDocumentoVentaCenabastIsNull()
         {
-            //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", 1, "DISPONIBLE", null) };
-
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
-
+            //Act + Assert
             Assert.ThrowsExactly<SolicitudInvalidaException>(
-                () => CrearSolicitud(
-                    esCenabast: true, lineas: lineas, fechaEntrega: fechaEntrega, hoy: hoy));
+                () => CrearSolicitud(esCenabast: true));
         }
 
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldThrow_When_EsCenabastIsFalseButDocumentoVentaCenabastIsPresent()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", 1, "DISPONIBLE", null) };
-
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
-
-            //Act
             DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
 
             //Act + Assert
             Assert.ThrowsExactly<SolicitudInvalidaException>(
-                () => CrearSolicitud(
-                    esCenabast: false, 
-                    documentoVentaCenabast: documentoVentaCenabast, 
-                    lineas: lineas, 
-                    fechaEntrega: fechaEntrega, 
-                    hoy: hoy));
+                () => CrearSolicitud(documentoVentaCenabast: documentoVentaCenabast));
         }
 
         [TestMethod]
@@ -77,19 +58,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Arrange
             DocumentoVentaCenabast documentoVentaCenabast = DocumentoVentaCenabast.Create("123456789");
             
-            IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", 1, "DISPONIBLE", null) };
-
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
-
             //Act
             SolicitudDeIngresoPedido solicitud = CrearSolicitud(
                 esCenabast: true, 
-                documentoVentaCenabast: documentoVentaCenabast, 
-                lineas: lineas, 
-                fechaEntrega: fechaEntrega, 
-                hoy: hoy);
+                documentoVentaCenabast: documentoVentaCenabast);
 
             //Assert
             Assert.AreSame(documentoVentaCenabast, solicitud.DocumentoVentaCenabast);
@@ -99,19 +71,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_EsCenabastIsFalseAndDocumentoVentaCenabastIsNull()
         {
-            //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = new[] { LineaSolicitud.Create(
-                "SKU-1", 1, "DISPONIBLE", null) };
-
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
-
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false, 
-                lineas: lineas, 
-                fechaEntrega: fechaEntrega, 
-                hoy: hoy);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
 
             //Assert
             Assert.IsNull(solicitud.DocumentoVentaCenabast);
@@ -123,16 +84,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> emptyLineas = Array.Empty<LineaSolicitud>();
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act + Assert
             Assert.ThrowsExactly<SolicitudInvalidaException>(
-                () => CrearSolicitud(
-                    esCenabast: false, 
-                    lineas: emptyLineas,
-                    fechaEntrega: fechaEntrega, 
-                    hoy: hoy));
+                () => CrearSolicitud(lineas: emptyLineas));
         }
 
         [TestMethod]
@@ -140,16 +95,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(16);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act + Assert
             Assert.ThrowsExactly<SolicitudInvalidaException>(
-                () => CrearSolicitud(
-                    esCenabast: false,
-                    lineas: lineas,
-                    fechaEntrega: fechaEntrega, 
-                    hoy: hoy));
+                () => CrearSolicitud(lineas: lineas));
         }
 
         [TestMethod]
@@ -157,15 +106,9 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         {
             //Arrange
             IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(15);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false, 
-                lineas: lineas, 
-                fechaEntrega: fechaEntrega, 
-                hoy: hoy);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(lineas: lineas);
 
             //Assert
             Assert.IsNotNull(solicitud);
@@ -176,37 +119,21 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldThrow_When_ObservacionHasMoreThan300Characters()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            string observacion = new string('A', 301);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
+            string observacion = new('A', 301);
 
             //Act + Assert
             Assert.ThrowsExactly<SolicitudInvalidaException>(
-                () => CrearSolicitud(
-                    esCenabast: false, 
-                    lineas: lineas, 
-                    observacion: observacion, 
-                    fechaEntrega: fechaEntrega, 
-                    hoy: hoy));
+                () => CrearSolicitud(observacion: observacion));
         }
 
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_ObservacionHas300Characters()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
             string observacion = new string('A', 300);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false,
-                lineas: lineas, 
-                observacion: observacion, 
-                fechaEntrega: fechaEntrega, 
-                hoy: hoy);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(observacion: observacion);
 
             //Assert
             Assert.IsNotNull(solicitud);
@@ -218,37 +145,21 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldThrow_When_FechaEntregaSolicitadaIsEarlierThanToday()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            string observacion = new string('A', 100);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
             DateOnly fechaEntrega = new DateOnly(2026, 7, 25);
 
             //Act + Assert
             Assert.ThrowsExactly<SolicitudInvalidaException>(
-                () => CrearSolicitud(
-                    esCenabast: false, 
-                    lineas: lineas, 
-                    observacion: observacion, 
-                    fechaEntrega: fechaEntrega, 
-                    hoy: hoy));
+                () => CrearSolicitud(fechaEntrega: fechaEntrega));
         }
 
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_FechaEntregaSolicitadaIsToday()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            string observacion = new string('A', 100);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
             DateOnly fechaEntrega = new DateOnly(2026, 7, 27);
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false, 
-                lineas: lineas, 
-                observacion: observacion, 
-                fechaEntrega: fechaEntrega, 
-                hoy: hoy);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(fechaEntrega: fechaEntrega);
 
             //Assert
             Assert.AreEqual(fechaEntrega, solicitud.FechaEntregaSolicitada);
@@ -258,18 +169,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_FechaEntregaSolicitadaIsInTheFuture()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            string observacion = new string('A', 100);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
             DateOnly fechaEntrega = new DateOnly(2026, 7, 28);
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false,
-                lineas: lineas, 
-                observacion: observacion, 
-                fechaEntrega: fechaEntrega, 
-                hoy: hoy);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(fechaEntrega: fechaEntrega);
 
             //Assert
             Assert.AreEqual(fechaEntrega, solicitud.FechaEntregaSolicitada);
@@ -279,18 +182,10 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldDefaultToToday_When_FechaEntregaSolicitadaIsNull()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            string observacion = new string('A', 100);
             DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly? fechaEntrega = null;
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false, 
-                lineas: lineas, 
-                observacion: observacion, 
-                fechaEntrega: fechaEntrega, 
-                hoy: hoy);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(hoy: hoy);
 
             //Assert
             Assert.AreEqual(hoy, solicitud.FechaEntregaSolicitada);
@@ -300,39 +195,23 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_NumeroDeliveryIsPresent()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly? fechaEntrega = null;
-            NumeroDelivery delivery = NumeroDelivery.Create("123456789");
+            NumeroDelivery NumeroDelivery = NumeroDelivery.Create("123456789");
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false,
-                lineas: lineas,
-                fechaEntrega: fechaEntrega,
-                hoy: hoy,
-                delivery: delivery);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(NumeroDelivery: NumeroDelivery);
 
             //Assert
-            Assert.AreSame(delivery, solicitud.Delivery);
+            Assert.AreSame(NumeroDelivery, solicitud.Delivery);
         }
 
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_OrdenCompraIsPresent()
         {
             //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly? fechaEntrega = null;
             string ordenCompra = "123456789";
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false,
-                lineas: lineas,
-                fechaEntrega: fechaEntrega,
-                hoy: hoy,
-                ordenCompra: ordenCompra);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(ordenCompra: ordenCompra);
 
             //Assert
             Assert.AreEqual(ordenCompra, solicitud.OrdenCompra);
@@ -341,18 +220,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_OrdenCompraIsNull()
         {
-            //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly? fechaEntrega = null;
-
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false,
-                lineas: lineas,
-                fechaEntrega: fechaEntrega,
-                hoy: hoy,
-                ordenCompra: null);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
 
             //Assert
             Assert.IsNull(solicitud.OrdenCompra);
@@ -361,18 +230,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_UrgenciaIsTrue()
         {
-            //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly? fechaEntrega = null;
-
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false,
-                lineas: lineas,
-                fechaEntrega: fechaEntrega,
-                hoy: hoy,
-                urgencia: true);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(urgencia: true);
 
             //Assert
             Assert.IsTrue(solicitud.Urgencia);
@@ -381,18 +240,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_UrgenciaIsFalse()
         {
-            //Arrange
-            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
-            DateOnly hoy = new DateOnly(2026, 7, 27);
-            DateOnly? fechaEntrega = null;
-
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
-                esCenabast: false,
-                lineas: lineas,
-                fechaEntrega: fechaEntrega,
-                hoy: hoy,
-                urgencia: false);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
 
             //Assert
             Assert.IsFalse(solicitud.Urgencia);
