@@ -316,5 +316,26 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreSame(delivery, solicitud.Delivery);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstruct_When_OrdenCompraIsPresent()
+        {
+            //Arrange
+            IReadOnlyCollection<LineaSolicitud> lineas = CrearLineas(1);
+            DateOnly hoy = new DateOnly(2026, 7, 27);
+            DateOnly? fechaEntrega = null;
+            string ordenCompra = "123456789";
+
+            //Act
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(
+                esCenabast: false,
+                lineas: lineas,
+                fechaEntrega: fechaEntrega,
+                hoy: hoy,
+                ordenCompra: ordenCompra);
+
+            //Assert
+            Assert.AreEqual(ordenCompra, solicitud.OrdenCompra);
+        }
     }
 }
