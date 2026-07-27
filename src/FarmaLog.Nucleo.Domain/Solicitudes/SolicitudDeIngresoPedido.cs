@@ -48,6 +48,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             bool urgencia)
         {
             ArgumentNullException.ThrowIfNull(numeroDelivery);
+            ArgumentNullException.ThrowIfNull(lineas);
 
             if (lineas.Count < 1)
                 throw new SolicitudInvalidaException("El pedido debe tener al menos una línea");

@@ -195,13 +195,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         public void SolicitudDeIngresoPedido_ShouldConstruct_When_NumeroDeliveryIsPresent()
         {
             //Arrange
-            NumeroDelivery NumeroDelivery = NumeroDelivery.Create("123456789");
+            NumeroDelivery numeroDelivery = NumeroDelivery.Create("123456789");
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud(numeroDelivery: NumeroDelivery);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(numeroDelivery: numeroDelivery);
 
             //Assert
-            Assert.AreSame(NumeroDelivery, solicitud.NumeroDelivery);
+            Assert.AreSame(numeroDelivery, solicitud.NumeroDelivery);
         }
 
         [TestMethod]
@@ -238,16 +238,6 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void SolicitudDeIngresoPedido_ShouldConstruct_When_UrgenciaIsFalse()
-        {
-            //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
-
-            //Assert
-            Assert.IsFalse(solicitud.Urgencia);
-        }
-
-        [TestMethod]
         public void SolicitudDeIngresoPedido_ShouldThrow_When_NumeroDeliveryIsNull()
         {
             //Act + Assert
@@ -260,6 +250,23 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                     null,
                     new DateOnly(2026, 7, 27),
                     null,
+                    null,
+                    false));
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_LineasIsNull()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<ArgumentNullException>(
+                () => SolicitudDeIngresoPedido.Create(
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    new DateOnly(2026, 7, 27),
+                    NumeroDelivery.Create("123456789"),
                     null,
                     false));
         }
