@@ -64,6 +64,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             bool urgencia)
         {
             ArgumentNullException.ThrowIfNull(codigoLaboratorio);
+            ArgumentNullException.ThrowIfNull(cuentaCliente);
             ArgumentNullException.ThrowIfNull(numeroDelivery);
             ArgumentNullException.ThrowIfNull(lineas);
 
