@@ -286,5 +286,26 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                     null,
                     false));
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_CodigoLaboratorioIsNull()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<ArgumentNullException>(
+                () => SolicitudDeIngresoPedido.Create(
+                    null,
+                    CuentaCliente.Create("23-0778903671"),
+                    DireccionDespacho.Create("23-778903671D1"),
+                    TipoOrdenVenta.Create("23F1"),
+                    false,
+                    null,
+                    CrearLineas(1),
+                    null,
+                    null,
+                    new DateOnly(2026, 7, 27),
+                    NumeroDelivery.Create("123456789"),
+                    null,
+                    false));
+        }
     }
 }

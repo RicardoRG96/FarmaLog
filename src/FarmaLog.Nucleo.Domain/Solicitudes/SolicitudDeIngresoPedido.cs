@@ -63,6 +63,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             string? ordenCompra,
             bool urgencia)
         {
+            ArgumentNullException.ThrowIfNull(codigoLaboratorio);
             ArgumentNullException.ThrowIfNull(numeroDelivery);
             ArgumentNullException.ThrowIfNull(lineas);
 
