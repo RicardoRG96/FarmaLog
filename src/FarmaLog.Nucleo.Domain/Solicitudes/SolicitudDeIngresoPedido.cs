@@ -1,4 +1,5 @@
 ﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
+using System.Collections.Immutable;
 
 namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
@@ -40,7 +41,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             TipoOrdenVenta = tipoOrdenVenta;
             EsCenabast = esCenabast;
             DocumentoVentaCenabast = documentoVentaCenabast;
-            Lineas = lineas;
+            Lineas = lineas.ToImmutableList();
             Observacion = observacion;
             FechaEntregaSolicitada = fechaEntregaSolicitada;
             NumeroDelivery = numeroDelivery;

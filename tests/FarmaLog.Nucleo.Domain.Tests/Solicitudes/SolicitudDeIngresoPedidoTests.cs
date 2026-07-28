@@ -403,5 +403,21 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Assert.ThrowsExactly<SolicitudInvalidaException>(
                 () => CrearSolicitud(tipoOrdenVenta: tipoOrdenVenta));
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldNotAllow_AddingMoreLinesAfterConstruction()
+        {
+            //Arrange
+            List<LineaSolicitud> lineas = Enumerable.Range(1, 15)
+                .Select(i => LineaSolicitud.Create($"SKU-{i}", 1, "DISPONIBLE", null))
+                .ToList();
+
+            //Act
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(lineas: lineas);
+            lineas.Add(LineaSolicitud.Create($"SKU-16", 1, "DISPONIBLE", null));
+
+            //Assert
+            Assert.HasCount(15, solicitud.Lineas);
+        }
     }
 }
