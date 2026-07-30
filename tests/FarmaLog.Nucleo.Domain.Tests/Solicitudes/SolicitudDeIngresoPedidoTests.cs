@@ -419,5 +419,15 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.HasCount(15, solicitud.Lineas);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstruct_WithEstadoRecibida()
+        {
+            //Act
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+
+            //Assert
+            Assert.AreEqual(EstadoSolicitud.Recibida, solicitud.Estado);
+        }
     }
 }
