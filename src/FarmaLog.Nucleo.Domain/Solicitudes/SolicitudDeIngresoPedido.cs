@@ -128,5 +128,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             if (tipoOrdenVenta.Codigo != codigoLaboratorio)
                 throw new SolicitudInvalidaException("El tipo de orden de venta debe pertenecer al mismo laboratorio");
         }
+
+        public void Aceptar()
+        {
+            Estado = EstadoSolicitud.Aceptada;
+        }
     }
 }

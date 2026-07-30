@@ -429,5 +429,18 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(EstadoSolicitud.Recibida, solicitud.Estado);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldChangeEstadoToAceptada_When_AceptarIsCalled()
+        {
+            //Arrange
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+
+            //Act
+            solicitud.Aceptar();
+
+            //Assert
+            Assert.AreEqual(EstadoSolicitud.Aceptada, solicitud.Estado);
+        }
     }
 }
