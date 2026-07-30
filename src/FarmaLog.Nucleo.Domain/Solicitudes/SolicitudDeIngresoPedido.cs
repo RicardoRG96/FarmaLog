@@ -20,6 +20,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public NumeroDelivery NumeroDelivery { get; }
         public string? OrdenCompra { get; }
         public bool Urgencia { get; }
+        public EstadoSolicitud Estado { get; private set; }
 
         private SolicitudDeIngresoPedido(
             CodigoLaboratorio codigoLaboratorio,
@@ -47,6 +48,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             NumeroDelivery = numeroDelivery;
             OrdenCompra = ordenCompra;
             Urgencia = urgencia;
+            Estado = EstadoSolicitud.Recibida;
         }
 
         public static SolicitudDeIngresoPedido Create(
