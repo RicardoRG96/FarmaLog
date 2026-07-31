@@ -474,5 +474,15 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             CollectionAssert.AreEqual(motivos.ToList(), solicitud.MotivosDeRechazo.ToList());
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstruct_WithoutMotivosDeRechazo()
+        {
+            //Act
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+
+            //Assert
+            Assert.IsEmpty(solicitud.MotivosDeRechazo);
+        }
     }
 }
