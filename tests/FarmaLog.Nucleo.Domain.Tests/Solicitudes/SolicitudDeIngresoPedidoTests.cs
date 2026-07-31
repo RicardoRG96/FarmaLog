@@ -503,5 +503,19 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.HasCount(2, solicitud.MotivosDeRechazo);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldKeepEstadoAceptada_When_AceptarIsCalledMoreThanOnce()
+        {
+            //Arrange
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+            solicitud.Aceptar();
+
+            //Act
+            solicitud.Aceptar();
+
+            //Assert
+            Assert.AreEqual(EstadoSolicitud.Aceptada, solicitud.Estado);
+        }
     }
 }
