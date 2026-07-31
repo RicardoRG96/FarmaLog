@@ -132,9 +132,15 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
         public void Aceptar()
         {
+            if (Estado == EstadoSolicitud.Aceptada)
+            {
+                return;
+            }
+
             if (Estado == EstadoSolicitud.Rechazada)
             {
-                throw new SolicitudYaResueltaException("La solicitud ya fue rechazada y no puede aceptarse.");
+                throw new SolicitudYaResueltaException(
+                    "La solicitud ya fue rechazada y no puede aceptarse.");
             }
 
             Estado = EstadoSolicitud.Aceptada;
@@ -149,7 +155,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             
             if (Estado == EstadoSolicitud.Aceptada)
             {
-                throw new SolicitudYaResueltaException("La solicitud ya fue aceptada y no puede rechazarse.");
+                throw new SolicitudYaResueltaException(
+                    "La solicitud ya fue aceptada y no puede rechazarse.");
             }
 
             Estado = EstadoSolicitud.Rechazada;
