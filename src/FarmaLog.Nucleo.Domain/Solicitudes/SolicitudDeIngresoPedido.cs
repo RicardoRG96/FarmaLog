@@ -21,7 +21,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public string? OrdenCompra { get; }
         public bool Urgencia { get; }
         public EstadoSolicitud Estado { get; private set; }
-        public IReadOnlyCollection<string> MotivosDeRechazo { get; private set; } = [];
+        public IReadOnlyCollection<string> MotivosDeRechazo { get; private set; } = ImmutableList<string>.Empty;
 
         private SolicitudDeIngresoPedido(
             CodigoLaboratorio codigoLaboratorio,
