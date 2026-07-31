@@ -561,5 +561,22 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             CollectionAssert.AreEqual(primerosMotivos.ToList(), solicitud.MotivosDeRechazo.ToList());
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_AceptarIsCalledAndSolicitudHasEstadoRechazada()
+        {
+            //Arrange
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+            IReadOnlyCollection<string> motivos =
+            [
+                "Stock insuficiente de SKU-1",
+                "Cuenta de cliente bloqueada"
+            ];
+            solicitud.Rechazar(motivos);
+
+            //Act +Assert
+            Assert.ThrowsExactly<SolicitudYaResueltaException>(
+                () => solicitud.Aceptar());
+        }
     }
 }
