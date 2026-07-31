@@ -405,7 +405,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
         }
 
         [TestMethod]
-        public void SolicitudDeIngresoPedido_ShouldNotAllow_AddingMoreLinesAfterConstruction()
+        public void SolicitudDeIngresoPedido_ShouldNotBeAffected_When_LinesAreMutatedAfterConstruction()
         {
             //Arrange
             List<LineaSolicitud> lineas = Enumerable.Range(1, 15)
@@ -483,6 +483,25 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Assert
             Assert.IsEmpty(solicitud.MotivosDeRechazo);
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldNotBeAffected_When_MotivosDeRechazoAreMutatedAfterRechazar()
+        {
+            //Arrange
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+            List<string> motivos =
+            [
+                "Stock insuficiente de SKU-1",
+                "Cliente bloqueado"
+            ];
+
+            //Act
+            solicitud.Rechazar(motivos);
+            motivos.Add("El lote 12345 no existe");
+
+            //Assert
+            Assert.HasCount(2, solicitud.MotivosDeRechazo);
         }
     }
 }

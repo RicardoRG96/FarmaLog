@@ -138,7 +138,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public void Rechazar(IReadOnlyCollection<string> motivos)
         {
             Estado = EstadoSolicitud.Rechazada;
-            MotivosDeRechazo = motivos;
+            MotivosDeRechazo = motivos.ToImmutableList();
         }
     }
 }
