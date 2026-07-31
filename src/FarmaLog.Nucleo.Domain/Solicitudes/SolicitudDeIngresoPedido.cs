@@ -133,5 +133,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         {
             Estado = EstadoSolicitud.Aceptada;
         }
+
+        public void Rechazar(IReadOnlyCollection<string> motivos)
+        {
+            Estado = EstadoSolicitud.Rechazada;
+        }
     }
 }
