@@ -11,7 +11,7 @@ namespace FarmaLog.Nucleo.Application.Tests.UseCases
             new(
                 CodigoLaboratorio: "53",
                 CuentaCliente: "53-0778903451",
-                DireccionDespacho: "23-778903451D1",
+                DireccionDespacho: "53-778903451D1",
                 TipoOrdenVenta: "53F1",
                 EsCenabast: false,
                 DocumentoVentaCenabast: null,

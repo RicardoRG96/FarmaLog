@@ -36,7 +36,7 @@ namespace FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso
                 DireccionDespacho.Create(command.DireccionDespacho),
                 TipoOrdenVenta.Create(command.TipoOrdenVenta),
                 command.EsCenabast,
-                DocumentoVentaCenabast.Create(command.DocumentoVentaCenabast),
+                MapearDocumentoCenabast(command.DocumentoVentaCenabast),
                 lineas,
                 command.Observacion,
                 command.FechaEntregaSolicitada,
@@ -47,5 +47,8 @@ namespace FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso
 
             await _repositorio.Guardar(solicitud);
         }
+
+        private static DocumentoVentaCenabast? MapearDocumentoCenabast(string? valor) =>
+            valor is null ? null : DocumentoVentaCenabast.Create(valor);
     }
 }

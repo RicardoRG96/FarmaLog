@@ -8,6 +8,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     public class SolicitudDeIngresoPedidoTests
     {
         private static SolicitudDeIngresoPedido CrearSolicitud(
+            Guid? id = null,
             CodigoLaboratorio codigoLaboratorio = null,
             CuentaCliente cuentaCliente = null,
             DireccionDespacho direccionDespacho = null,
@@ -22,7 +23,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             string? ordenCompra = null,
             bool urgencia = false)
             => SolicitudDeIngresoPedido.Create(
-                Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                id ?? Guid.Parse("11111111-1111-1111-1111-111111111111"),
                 codigoLaboratorio ?? CodigoLaboratorio.Create("23"),
                 cuentaCliente ?? CuentaCliente.Create("23-0778903671"),
                 direccionDespacho ?? DireccionDespacho.Create("23-778903671D1"),
@@ -36,6 +37,25 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 numeroDelivery ?? NumeroDelivery.Create("123456789"),
                 ordenCompra,
                 urgencia);
+
+        private static SolicitudDeIngresoPedido RehidratarSolicitud(
+            EstadoSolicitud estado,
+            Guid? id = null)
+            => SolicitudDeIngresoPedido.Rehidratar(
+                id ?? Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                CodigoLaboratorio.Create("23"),
+                CuentaCliente.Create("23-0778903671"),
+                DireccionDespacho.Create("23-778903671D1"),
+                TipoOrdenVenta.Create("23F1"),
+                false,
+                null,
+                CrearLineas(1),
+                null,
+                new DateOnly(2026, 7, 27),
+                NumeroDelivery.Create("123456789"),
+                null,
+                false,
+                estado);
 
         private static IReadOnlyCollection<LineaSolicitud> CrearLineas(int cantidad) =>
             Enumerable.Range(1, cantidad)
@@ -610,7 +630,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             Guid expected = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
             //Act
-            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(id: expected);
 
             //Assert
             Assert.AreEqual(expected, solicitud.Id);
@@ -636,6 +656,16 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                     NumeroDelivery.Create("123456789"),
                     null,
                     false));
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldPreserveEstado_When_IsRehidratada()
+        {
+            //Act
+            SolicitudDeIngresoPedido solicitud = RehidratarSolicitud(estado: EstadoSolicitud.Aceptada);
+
+            //Assert
+            Assert.AreEqual(EstadoSolicitud.Aceptada, solicitud.Estado);
         }
     }
 }

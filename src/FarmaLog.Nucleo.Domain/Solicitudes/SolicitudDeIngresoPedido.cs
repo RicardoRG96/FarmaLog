@@ -37,7 +37,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             DateOnly fechaEntregaSolicitada,
             NumeroDelivery numeroDelivery,
             string? ordenCompra,
-            bool urgencia)
+            bool urgencia,
+            EstadoSolicitud estado)
         {
             Id = id;
             CodigoLaboratorio = codigoLaboratorio;
@@ -52,7 +53,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             NumeroDelivery = numeroDelivery;
             OrdenCompra = ordenCompra;
             Urgencia = urgencia;
-            Estado = EstadoSolicitud.Recibida;
+            Estado = estado;
         }
 
         public static SolicitudDeIngresoPedido Create(
@@ -119,7 +120,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 fechaEntregaFinal,
                 numeroDelivery,
                 ordenCompra,
-                urgencia);
+                urgencia,
+                EstadoSolicitud.Recibida);
         }
 
         private static void VerificarPertenenciaAlLaboratorio(
@@ -137,6 +139,37 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             if (tipoOrdenVenta.Codigo != codigoLaboratorio)
                 throw new SolicitudInvalidaException("El tipo de orden de venta debe pertenecer al mismo laboratorio");
         }
+
+        public static SolicitudDeIngresoPedido Rehidratar(
+            Guid id,
+            CodigoLaboratorio codigoLaboratorio,
+            CuentaCliente cuentaCliente,
+            DireccionDespacho direccionDespacho,
+            TipoOrdenVenta tipoOrdenVenta,
+            bool esCenabast,
+            DocumentoVentaCenabast? documentoVentaCenabast,
+            IReadOnlyCollection<LineaSolicitud> lineas,
+            string? observacion,
+            DateOnly fechaEntregaSolicitada,
+            NumeroDelivery numeroDelivery,
+            string? ordenCompra,
+            bool urgencia,
+            EstadoSolicitud estado)
+            => new(
+                id,
+                codigoLaboratorio,
+                cuentaCliente,
+                direccionDespacho,
+                tipoOrdenVenta,
+                esCenabast,
+                documentoVentaCenabast,
+                lineas,
+                observacion,
+                fechaEntregaSolicitada,
+                numeroDelivery,
+                ordenCompra,
+                urgencia,
+                estado);
 
         public void Aceptar()
         {
