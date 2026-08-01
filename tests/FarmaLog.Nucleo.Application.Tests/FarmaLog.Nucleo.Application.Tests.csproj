@@ -8,4 +8,9 @@
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Doubles\" />
+    <Folder Include="UseCases\" />
+  </ItemGroup>
+
 </Project>
