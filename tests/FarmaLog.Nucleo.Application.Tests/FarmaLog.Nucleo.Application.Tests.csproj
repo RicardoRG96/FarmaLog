@@ -9,8 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Doubles\" />
     <Folder Include="UseCases\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FarmaLog.Nucleo.Application\FarmaLog.Nucleo.Application.csproj" />
   </ItemGroup>
 
 </Project>
