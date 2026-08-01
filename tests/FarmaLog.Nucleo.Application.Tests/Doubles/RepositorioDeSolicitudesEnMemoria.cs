@@ -3,7 +3,7 @@ using FarmaLog.Nucleo.Domain.Solicitudes;
 
 namespace FarmaLog.Nucleo.Application.Tests.Doubles
 {
-    public class RepositorioDeSolicitudesEnMemoria : IRepositorioDeSolicitudes
+    public sealed class RepositorioDeSolicitudesEnMemoria : IRepositorioDeSolicitudes
     {
         private readonly List<SolicitudDeIngresoPedido> _guardadas = new();
 
