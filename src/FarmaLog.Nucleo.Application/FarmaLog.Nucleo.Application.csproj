@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="UseCases\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\FarmaLog.Nucleo.Domain\FarmaLog.Nucleo.Domain.csproj" />
   </ItemGroup>
 
