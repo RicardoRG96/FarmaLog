@@ -9,10 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="UseCases\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\FarmaLog.Nucleo.Application\FarmaLog.Nucleo.Application.csproj" />
   </ItemGroup>
 

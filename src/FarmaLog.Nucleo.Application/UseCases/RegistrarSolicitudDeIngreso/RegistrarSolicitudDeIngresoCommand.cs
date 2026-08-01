@@ -6,17 +6,11 @@
         string DireccionDespacho,
         string TipoOrdenVenta,
         bool EsCenabast,
-        string DocumentoVentaCenabast,
-        string Observacion,
-        DateOnly FechaEntregaSolicitada,
+        string? DocumentoVentaCenabast,
+        string? Observacion,
+        DateOnly? FechaEntregaSolicitada,
         string NumeroDelivery,
-        string OrdenCompra,
+        string? OrdenCompra,
         bool Urgencia,
         IReadOnlyList<LineaDeSolicitudCommand> Lineas);
-
-    public sealed record LineaDeSolicitudCommand(
-        string Sku,
-        int Cantidad,
-        string EstadoInventario,
-        string Lote);
 }

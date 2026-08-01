@@ -4,7 +4,7 @@ namespace FarmaLog.Nucleo.Application.Tests.Doubles
 {
     public sealed class RelojFijo : IReloj
     {
-        public RelojFijo(DateTime ahoraUtc) => AhoraUtc = ahoraUtc;
-        public DateTime AhoraUtc { get; }
+        public RelojFijo(DateOnly hoy) => Hoy = hoy;
+        public DateOnly Hoy { get; }
     }
 }

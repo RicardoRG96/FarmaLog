@@ -2,6 +2,6 @@
 {
     public interface IReloj
     {
-        DateTime AhoraUtc { get; }
+        DateOnly Hoy { get; }
     }
 }
