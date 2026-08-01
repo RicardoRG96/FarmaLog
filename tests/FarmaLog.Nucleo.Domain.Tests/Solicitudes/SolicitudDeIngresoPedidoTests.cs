@@ -40,6 +40,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
         private static SolicitudDeIngresoPedido RehidratarSolicitud(
             EstadoSolicitud estado,
+            IReadOnlyCollection<string>? motivos = null,
             Guid? id = null)
             => SolicitudDeIngresoPedido.Rehidratar(
                 id ?? Guid.Parse("11111111-1111-1111-1111-111111111111"),
@@ -55,7 +56,8 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 NumeroDelivery.Create("123456789"),
                 null,
                 false,
-                estado);
+                estado,
+                motivos ?? []);
 
         private static IReadOnlyCollection<LineaSolicitud> CrearLineas(int cantidad) =>
             Enumerable.Range(1, cantidad)
@@ -666,6 +668,21 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             //Assert
             Assert.AreEqual(EstadoSolicitud.Aceptada, solicitud.Estado);
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldPreserveMotivosDeRechazo_When_IsRehidratada()
+        {
+            // Arrange
+            string[] motivos = ["El SKU no existe en el catálogo"];
+
+            // Act
+            SolicitudDeIngresoPedido solicitud = RehidratarSolicitud(
+                estado: EstadoSolicitud.Rechazada,
+                motivos: motivos);
+
+            // Assert
+            Assert.AreEqual("El SKU no existe en el catálogo", solicitud.MotivosDeRechazo.Single());
         }
     }
 }

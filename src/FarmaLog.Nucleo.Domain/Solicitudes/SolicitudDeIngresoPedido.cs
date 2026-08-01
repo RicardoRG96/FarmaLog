@@ -22,7 +22,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public string? OrdenCompra { get; }
         public bool Urgencia { get; }
         public EstadoSolicitud Estado { get; private set; }
-        public IReadOnlyCollection<string> MotivosDeRechazo { get; private set; } = ImmutableList<string>.Empty;
+        public IReadOnlyCollection<string> MotivosDeRechazo { get; private set; }
 
         private SolicitudDeIngresoPedido(
             Guid id,
@@ -38,7 +38,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             NumeroDelivery numeroDelivery,
             string? ordenCompra,
             bool urgencia,
-            EstadoSolicitud estado)
+            EstadoSolicitud estado,
+            IReadOnlyCollection<string> motivosDeRechazo)
         {
             Id = id;
             CodigoLaboratorio = codigoLaboratorio;
@@ -54,6 +55,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             OrdenCompra = ordenCompra;
             Urgencia = urgencia;
             Estado = estado;
+            MotivosDeRechazo = motivosDeRechazo.ToImmutableList();
         }
 
         public static SolicitudDeIngresoPedido Create(
@@ -121,7 +123,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 numeroDelivery,
                 ordenCompra,
                 urgencia,
-                EstadoSolicitud.Recibida);
+                EstadoSolicitud.Recibida,
+                []);
         }
 
         private static void VerificarPertenenciaAlLaboratorio(
@@ -154,7 +157,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             NumeroDelivery numeroDelivery,
             string? ordenCompra,
             bool urgencia,
-            EstadoSolicitud estado)
+            EstadoSolicitud estado,
+            IReadOnlyCollection<string> motivosDeRechazo)
             => new(
                 id,
                 codigoLaboratorio,
@@ -169,7 +173,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 numeroDelivery,
                 ordenCompra,
                 urgencia,
-                estado);
+                estado,
+                motivosDeRechazo);
 
         public void Aceptar()
         {
