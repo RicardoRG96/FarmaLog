@@ -71,6 +71,9 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             string? ordenCompra,
             bool urgencia)
         {
+            if (id == Guid.Empty)
+                throw new ArgumentException("El pedido debe tener un ID");
+
             ArgumentNullException.ThrowIfNull(codigoLaboratorio);
             ArgumentNullException.ThrowIfNull(cuentaCliente);
             ArgumentNullException.ThrowIfNull(direccionDespacho);

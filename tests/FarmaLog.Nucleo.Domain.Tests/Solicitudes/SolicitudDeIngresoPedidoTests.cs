@@ -615,5 +615,27 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expected, solicitud.Id);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldThrow_When_AnEmptyIdIsPassed()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<ArgumentException>(
+                () => SolicitudDeIngresoPedido.Create(
+                    Guid.Empty,
+                    CodigoLaboratorio.Create("23"),
+                    CuentaCliente.Create("23-0778903671"),
+                    DireccionDespacho.Create("23-778903671D1"),
+                    TipoOrdenVenta.Create("23F1"),
+                    false,
+                    null,
+                    CrearLineas(1),
+                    null,
+                    null,
+                    new DateOnly(2026, 7, 27),
+                    NumeroDelivery.Create("123456789"),
+                    null,
+                    false));
+        }
     }
 }
