@@ -22,6 +22,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             string? ordenCompra = null,
             bool urgencia = false)
             => SolicitudDeIngresoPedido.Create(
+                Guid.Parse("11111111-1111-1111-1111-111111111111"),
                 codigoLaboratorio ?? CodigoLaboratorio.Create("23"),
                 cuentaCliente ?? CuentaCliente.Create("23-0778903671"),
                 direccionDespacho ?? DireccionDespacho.Create("23-778903671D1"),
@@ -251,6 +252,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<ArgumentNullException>(
                 () => SolicitudDeIngresoPedido.Create(
+                    Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     CodigoLaboratorio.Create("23"),
                     CuentaCliente.Create("23-0778903671"),
                     DireccionDespacho.Create("23-778903671D1"),
@@ -272,6 +274,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<ArgumentNullException>(
                 () => SolicitudDeIngresoPedido.Create(
+                    Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     CodigoLaboratorio.Create("23"),
                     CuentaCliente.Create("23-0778903671"),
                     DireccionDespacho.Create("23-778903671D1"),
@@ -293,6 +296,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<ArgumentNullException>(
                 () => SolicitudDeIngresoPedido.Create(
+                    Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     null,
                     CuentaCliente.Create("23-0778903671"),
                     DireccionDespacho.Create("23-778903671D1"),
@@ -314,6 +318,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<ArgumentNullException>(
                 () => SolicitudDeIngresoPedido.Create(
+                    Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     CodigoLaboratorio.Create("23"),
                     null,
                     DireccionDespacho.Create("23-778903671D1"),
@@ -335,6 +340,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<ArgumentNullException>(
                 () => SolicitudDeIngresoPedido.Create(
+                    Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     CodigoLaboratorio.Create("23"),
                     CuentaCliente.Create("23-0778903671"),
                     null,
@@ -356,6 +362,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act + Assert
             Assert.ThrowsExactly<ArgumentNullException>(
                 () => SolicitudDeIngresoPedido.Create(
+                    Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     CodigoLaboratorio.Create("23"),
                     CuentaCliente.Create("23-0778903671"),
                     DireccionDespacho.Create("23-778903671D1"),
@@ -594,6 +601,19 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Act +Assert
             Assert.ThrowsExactly<SolicitudYaResueltaException>(
                 () => solicitud.Rechazar(motivos));
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_ShouldConstructWithId_When_IdIsPassed()
+        {
+            //Arrange
+            Guid expected = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+            //Act
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+
+            //Assert
+            Assert.AreEqual(expected, solicitud.Id);
         }
     }
 }

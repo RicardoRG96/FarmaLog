@@ -21,7 +21,7 @@ namespace FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso
 
         public async Task Handle(RegistrarSolicitudDeIngresoCommand command)
         {
-            DateOnly hoy = _reloj.AhoraUtc;
+            DateOnly hoy = _reloj.Hoy;
 
             Guid id = _generador.Nuevo();
 

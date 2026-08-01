@@ -8,6 +8,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         private const int MaximoDeLineasPermitidas = 15;
         private const int MaximoDeCaracteresObservacion = 300;
 
+        public Guid Id { get; }
         public CodigoLaboratorio CodigoLaboratorio { get; }
         public CuentaCliente CuentaCliente { get; }
         public DireccionDespacho DireccionDespacho { get; }
@@ -24,6 +25,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public IReadOnlyCollection<string> MotivosDeRechazo { get; private set; } = ImmutableList<string>.Empty;
 
         private SolicitudDeIngresoPedido(
+            Guid id,
             CodigoLaboratorio codigoLaboratorio,
             CuentaCliente cuentaCliente,
             DireccionDespacho direccionDespacho,
@@ -37,6 +39,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             string? ordenCompra,
             bool urgencia)
         {
+            Id = id;
             CodigoLaboratorio = codigoLaboratorio;
             CuentaCliente = cuentaCliente;
             DireccionDespacho = direccionDespacho;
@@ -53,6 +56,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         }
 
         public static SolicitudDeIngresoPedido Create(
+            Guid id,
             CodigoLaboratorio codigoLaboratorio,
             CuentaCliente cuentaCliente,
             DireccionDespacho direccionDespacho,
@@ -100,6 +104,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             DateOnly fechaEntregaFinal = fechaEntrega ?? hoy;
 
             return new SolicitudDeIngresoPedido(
+                id,
                 codigoLaboratorio,
                 cuentaCliente,
                 direccionDespacho,
