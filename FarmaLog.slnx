@@ -2,9 +2,11 @@
   <Folder Name="/src/">
     <Project Path="src/FarmaLog.Nucleo.Application/FarmaLog.Nucleo.Application.csproj" Id="776fcfa0-f1a1-4208-a72a-67079d7664fb" />
     <Project Path="src/FarmaLog.Nucleo.Domain/FarmaLog.Nucleo.Domain.csproj" />
+    <Project Path="src/FarmaLog.Nucleo.Infrastructure/FarmaLog.Nucleo.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FarmaLog.Nucleo.Application.Tests/FarmaLog.Nucleo.Application.Tests.csproj" Id="ab515468-375b-4108-9d2f-022393471d13" />
     <Project Path="tests/FarmaLog.Nucleo.Domain.Tests/FarmaLog.Nucleo.Domain.Tests.csproj" />
+    <Project Path="tests/FarmaLog.Nucleo.Infrastructure.Tests/FarmaLog.Nucleo.Infrastructure.Tests.csproj" />
   </Folder>
 </Solution>
