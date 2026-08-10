@@ -1,5 +1,4 @@
 ﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
-using System.Collections.Immutable;
 
 namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
@@ -15,14 +14,20 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public TipoOrdenVenta TipoOrdenVenta { get; }
         public bool EsCenabast { get; }
         public DocumentoVentaCenabast? DocumentoVentaCenabast { get; }
-        public IReadOnlyCollection<LineaSolicitud> Lineas { get; }
+        private readonly List<LineaSolicitud> _lineas = [];
+        public IReadOnlyCollection<LineaSolicitud> Lineas => _lineas.AsReadOnly();
         public string? Observacion { get; }
         public DateOnly FechaEntregaSolicitada { get; }
         public NumeroDelivery NumeroDelivery { get; }
         public string? OrdenCompra { get; }
         public bool Urgencia { get; }
         public EstadoSolicitud Estado { get; private set; }
-        public IReadOnlyCollection<string> MotivosDeRechazo { get; private set; }
+        private readonly List<string> _motivosDeRechazo = [];
+        public IReadOnlyCollection<string> MotivosDeRechazo => _motivosDeRechazo.AsReadOnly();
+
+        #pragma warning disable CS8618 // EF Core materializa los campos por reflexión
+        private SolicitudDeIngresoPedido() { }
+        #pragma warning restore CS8618
 
         private SolicitudDeIngresoPedido(
             Guid id,
@@ -48,14 +53,14 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             TipoOrdenVenta = tipoOrdenVenta;
             EsCenabast = esCenabast;
             DocumentoVentaCenabast = documentoVentaCenabast;
-            Lineas = lineas.ToImmutableList();
+            _lineas.AddRange(lineas);
             Observacion = observacion;
             FechaEntregaSolicitada = fechaEntregaSolicitada;
             NumeroDelivery = numeroDelivery;
             OrdenCompra = ordenCompra;
             Urgencia = urgencia;
             Estado = estado;
-            MotivosDeRechazo = motivosDeRechazo.ToImmutableList();
+            _motivosDeRechazo = [.. motivosDeRechazo];
         }
 
         public static SolicitudDeIngresoPedido Create(
@@ -206,7 +211,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             }
 
             Estado = EstadoSolicitud.Rechazada;
-            MotivosDeRechazo = motivos.ToImmutableList();
+            _motivosDeRechazo = [.. motivos];
         }
     }
 }

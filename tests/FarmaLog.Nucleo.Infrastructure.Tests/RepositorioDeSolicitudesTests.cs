@@ -30,14 +30,14 @@ public class RepositorioDeSolicitudesTests
         // Arrange
         SolicitudDeIngresoPedido solicitud = SolicitudDeIngresoPedidoTests.CrearSolicitud();
 
-        await using NucleoDbContext contextoDeEscritura = new(Options());
-        RepositorioDeSolicitudes repositorio = new(contextoDeEscritura);
+        await using NucleoDbContext writingContext = new(Options());
+        RepositorioDeSolicitudes repositorio = new(writingContext);
 
         // Act
         await repositorio.Guardar(solicitud, CancellationToken.None);
 
-        await using NucleoDbContext contextoDeLectura = new(Options());
-        SolicitudDeIngresoPedido solicitudRehidratada = contextoDeLectura
+        await using NucleoDbContext readingContext = new(Options());
+        SolicitudDeIngresoPedido solicitudRehidratada = readingContext
             .Solicitudes
             .Single(s => s.Id == solicitud.Id);
 
