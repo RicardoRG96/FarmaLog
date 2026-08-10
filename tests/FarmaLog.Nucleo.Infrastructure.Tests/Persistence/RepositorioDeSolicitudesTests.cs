@@ -3,7 +3,7 @@ using FarmaLog.Nucleo.Domain.Solicitudes;
 using FarmaLog.Nucleo.Domain.Tests.Solicitudes;
 using Microsoft.EntityFrameworkCore;
 
-namespace FarmaLog.Nucleo.Infrastructure.Tests;
+namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence;
 
 [TestClass]
 public class RepositorioDeSolicitudesTests
