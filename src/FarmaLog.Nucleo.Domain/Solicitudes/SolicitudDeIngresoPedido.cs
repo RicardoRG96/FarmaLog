@@ -211,7 +211,8 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             }
 
             Estado = EstadoSolicitud.Rechazada;
-            _motivosDeRechazo = [.. motivos];
+            _motivosDeRechazo.Clear();
+            _motivosDeRechazo.AddRange(motivos);
         }
     }
 }
