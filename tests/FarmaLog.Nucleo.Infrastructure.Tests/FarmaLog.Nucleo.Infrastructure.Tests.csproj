@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FarmaLog.Nucleo.Infrastructure\FarmaLog.Nucleo.Infrastructure.csproj" />
+    <ProjectReference Include="..\FarmaLog.Nucleo.Domain.Tests\FarmaLog.Nucleo.Domain.Tests.csproj" />
   </ItemGroup>
 
 </Project>

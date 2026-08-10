@@ -7,7 +7,7 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
     [TestClass]
     public class SolicitudDeIngresoPedidoTests
     {
-        private static SolicitudDeIngresoPedido CrearSolicitud(
+        public static SolicitudDeIngresoPedido CrearSolicitud(
             Guid? id = null,
             CodigoLaboratorio codigoLaboratorio = null,
             CuentaCliente cuentaCliente = null,
