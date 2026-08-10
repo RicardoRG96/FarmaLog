@@ -60,7 +60,7 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
             OrdenCompra = ordenCompra;
             Urgencia = urgencia;
             Estado = estado;
-            _motivosDeRechazo = [.. motivosDeRechazo];
+            _motivosDeRechazo.AddRange(motivosDeRechazo);
         }
 
         public static SolicitudDeIngresoPedido Create(
