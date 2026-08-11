@@ -45,7 +45,9 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
             GeneradorDeIdentificadoresFijo generador = new(
                 Guid.Parse("11111111-1111-1111-1111-111111111111"));
 
-            RegistrarSolicitudMessageHandler handler = new(repositorio, reloj, generador);
+            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador);
+
+            RegistrarSolicitudMessageHandler handler = new(applicationHandler);
 
             //Act
             MessageDestination destination = await handler.Handle(mensaje, CancellationToken.None);
@@ -78,7 +80,9 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
             GeneradorDeIdentificadoresFijo generador = new(
                 Guid.Parse("11111111-1111-1111-1111-111111111111"));
 
-            RegistrarSolicitudMessageHandler handler = new(repositorio, reloj, generador);
+            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador);
+
+            RegistrarSolicitudMessageHandler handler = new(applicationHandler);
 
             //Act
             MessageDestination destination = await handler.Handle(mensaje, CancellationToken.None);

@@ -4,19 +4,15 @@ using FarmaLog.Nucleo.Domain.Common;
 
 namespace FarmaLog.Nucleo.Infrastructure.Messaging
 {
-    public class RegistrarSolicitudMessageHandler(
-        IRepositorioDeSolicitudes repositorio,
-        IReloj reloj,
-        IGeneradorDeIdentificadores generador)
+    public sealed class RegistrarSolicitudMessageHandler(
+        RegistrarSolicitudDeIngresoHandler handler)
     {
-        private readonly RegistrarSolicitudDeIngresoHandler _handler = new(repositorio, reloj, generador);
-
         public async Task<MessageDestination> Handle(
             RegistrarSolicitudMessage message, CancellationToken cancellationToken)
         {
             try
             {
-                await _handler.Handle(Map(message));
+                await handler.Handle(Map(message));
                 return MessageDestination.Completar;
             }
             catch (DomainException)
