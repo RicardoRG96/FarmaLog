@@ -21,7 +21,6 @@ namespace FarmaLog.Nucleo.Infrastructure.Persistence
                 .HasConversion(v => v.Numero, v => NumeroDelivery.Create(v))
                 .HasMaxLength(50).IsRequired();
 
-            // ⚠️ CONFIRMAR el nombre de la propiedad de cada uno de estos tres
             builder.Property(s => s.CuentaCliente)
                 .HasConversion(v => v.Cuenta, v => CuentaCliente.Create(v))
                 .HasMaxLength(50).IsRequired();

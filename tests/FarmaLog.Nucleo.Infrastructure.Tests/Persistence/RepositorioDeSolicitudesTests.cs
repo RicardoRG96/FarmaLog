@@ -1,6 +1,7 @@
 ﻿using FarmaLog.Nucleo.Application.Ports;
 using FarmaLog.Nucleo.Domain.Solicitudes;
 using FarmaLog.Nucleo.Domain.Tests.Solicitudes;
+using FarmaLog.Nucleo.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence;
