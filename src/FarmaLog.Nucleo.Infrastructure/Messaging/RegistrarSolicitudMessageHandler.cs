@@ -4,8 +4,7 @@ using FarmaLog.Nucleo.Domain.Common;
 
 namespace FarmaLog.Nucleo.Infrastructure.Messaging
 {
-    public sealed class RegistrarSolicitudMessageHandler(
-        RegistrarSolicitudDeIngresoHandler handler)
+    public sealed class RegistrarSolicitudMessageHandler(RegistrarSolicitudDeIngresoHandler handler)
     {
         public async Task<MessageDestination> Handle(
             RegistrarSolicitudMessage message, CancellationToken cancellationToken)
