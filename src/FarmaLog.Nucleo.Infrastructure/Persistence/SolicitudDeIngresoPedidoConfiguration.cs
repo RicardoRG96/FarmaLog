@@ -37,6 +37,11 @@ namespace FarmaLog.Nucleo.Infrastructure.Persistence
                 .HasConversion(v => v!.Documento, v => DocumentoVentaCenabast.Create(v))
                 .HasMaxLength(50);
 
+            builder
+                .HasIndex(s => new { s.CodigoLaboratorio, s.NumeroDelivery })
+                .IsUnique()
+                .HasDatabaseName("UX_Solicitudes_Laboratorio_Delivery");
+
             builder.Property(s => s.EsCenabast).IsRequired();
             builder.Property(s => s.Urgencia).IsRequired();
             builder.Property(s => s.Estado).HasConversion<int>().IsRequired();

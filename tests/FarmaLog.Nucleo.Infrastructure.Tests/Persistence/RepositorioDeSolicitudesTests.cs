@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence;
 
 [TestClass]
+[DoNotParallelize]
 public class RepositorioDeSolicitudesTests
 {
     private const string ConnectionString =
@@ -49,5 +50,28 @@ public class RepositorioDeSolicitudesTests
         Assert.AreEqual(solicitud.NumeroDelivery, solicitudRehidratada.NumeroDelivery);
         Assert.AreEqual(solicitud.FechaEntregaSolicitada, solicitudRehidratada.FechaEntregaSolicitada);
         Assert.AreEqual(solicitud.Lineas.Count, solicitudRehidratada.Lineas.Count);
+    }
+
+    [TestMethod]
+    public async Task RepositorioDeSolicitudes_ShouldReturnYaExistia_When_TheSameDeliveryAndCodigoLaboratorioIsSavedTwice()
+    {
+        // Arrange
+        SolicitudDeIngresoPedido primeraSolicitud = SolicitudDeIngresoPedidoTests.CrearSolicitud();
+        SolicitudDeIngresoPedido segundaSolicitud = SolicitudDeIngresoPedidoTests.CrearSolicitud(
+            id: Guid.Parse("22222222-2222-2222-2222-222222222222"));
+
+        await using NucleoDbContext primerContexto = new(Options());
+        await using NucleoDbContext segundoContexto = new(Options());
+
+        // Act
+        ResultadoGuardado primerResultado =
+            await new RepositorioDeSolicitudes(primerContexto).Guardar(primeraSolicitud, CancellationToken.None);
+
+        ResultadoGuardado segundoResultado =
+            await new RepositorioDeSolicitudes(segundoContexto).Guardar(segundaSolicitud, CancellationToken.None);
+
+        // Assert
+        Assert.AreEqual(ResultadoGuardado.Guardada, primerResultado);
+        Assert.AreEqual(ResultadoGuardado.YaExistia, segundoResultado);
     }
 }
