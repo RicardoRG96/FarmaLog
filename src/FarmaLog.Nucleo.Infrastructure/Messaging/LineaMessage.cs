@@ -1,5 +1,10 @@
-﻿namespace FarmaLog.Nucleo.Infrastructure.Messaging
+﻿using System.Text.Json.Serialization;
+
+namespace FarmaLog.Nucleo.Infrastructure.Messaging
 {
     public sealed record LineaMessage(
-        string Sku, int Cantidad, string EstadoInventario, string? Lote);
+        [property: JsonRequired] string Sku,
+        [property: JsonRequired] int Cantidad,
+        [property: JsonRequired] string EstadoInventario, 
+        string? Lote);
 }
