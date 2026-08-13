@@ -5,12 +5,14 @@ namespace FarmaLog.Nucleo.Infrastructure.Messaging
     public sealed class RegistrarSolicitudMessageDispatcher(
         RegistrarSolicitudMessageHandler messageHandler)
     {
-        public async Task<MessageDestination> Dispatch(string body, CancellationToken ct)
+        public async Task<MessageDestination> DispatchAsync(string body, CancellationToken ct)
         {
             try
             {
-                RegistrarSolicitudMessage message = 
+                RegistrarSolicitudMessage? message = 
                     JsonSerializer.Deserialize<RegistrarSolicitudMessage>(body);
+
+                if (message is null) return MessageDestination.DescartarADeadLetter;
 
                 return await messageHandler.Handle(message, ct);
             }

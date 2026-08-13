@@ -24,7 +24,30 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
             string bodyRoto = "{ esto no es json }";
 
             //Act
-            MessageDestination destino = await dispatcher.Dispatch(bodyRoto, CancellationToken.None);
+            MessageDestination destino = await dispatcher.DispatchAsync(bodyRoto, CancellationToken.None);
+
+            //Assert
+            Assert.AreEqual(MessageDestination.DescartarADeadLetter, destino);
+            Assert.HasCount(0, repositorio.Guardadas);
+        }
+
+        [TestMethod]
+        public async Task RegistrarSolicitudMessageDispatcher_ShouldReturnDescartarADeadLetter_When_TheBodyDeserializesToNull()
+        {
+            //Arrange
+            RepositorioDeSolicitudesEnMemoria repositorio = new();
+            RelojFijo reloj = new(new DateOnly(2026, 8, 1));
+            GeneradorDeIdentificadoresFijo generador = new(
+                Guid.Parse("11111111-1111-1111-1111-111111111111"));
+
+            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador);
+
+            RegistrarSolicitudMessageHandler messageHandler = new(applicationHandler);
+
+            RegistrarSolicitudMessageDispatcher dispatcher = new(messageHandler);
+            string bodyNulo = "null";
+
+            MessageDestination destino = await dispatcher.DispatchAsync(bodyNulo, CancellationToken.None);
 
             //Assert
             Assert.AreEqual(MessageDestination.DescartarADeadLetter, destino);
