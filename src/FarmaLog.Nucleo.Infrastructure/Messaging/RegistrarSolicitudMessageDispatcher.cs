@@ -12,7 +12,8 @@ namespace FarmaLog.Nucleo.Infrastructure.Messaging
                 RegistrarSolicitudMessage? message = 
                     JsonSerializer.Deserialize<RegistrarSolicitudMessage>(body);
 
-                if (message is null) return MessageDestination.DescartarADeadLetter;
+                if (message is null || message.Lineas is null) 
+                    return MessageDestination.DescartarADeadLetter;
 
                 return await messageHandler.Handle(message, ct);
             }
