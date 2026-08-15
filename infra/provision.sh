@@ -4,10 +4,13 @@
 # Crea: Service Bus Standard + cola, Azure SQL (free offer) + reglas de firewall.
 # El resource group ya existe (se creó para poder scopear el budget alert).
 #
-# Uso:          bash infra/provision.sh
-# Borrar todo:  az group delete --name rg-farmalog --yes --no-wait
+# Requiere sesión previa:  az login --use-device-code
+# Uso:                     bash infra/provision.sh
+# Borrar los recursos:     az servicebus namespace delete -g rg-farmalog -n <SB_NS>
+#                          az sql server delete -g rg-farmalog -n <SQL_SERVER> --yes
 #
-# NO contiene secretos. La password del admin de SQL se pide por consola.
+# NO autentica y NO contiene secretos: la autenticación es contexto de ejecución,
+# no parte del contrato de infraestructura.
 
 set -euo pipefail
 
@@ -25,8 +28,11 @@ SQL_DB="farmalog-nucleo"
 SQL_ADMIN="farmalogadmin"
 
 # ---------------------------------------------------------------------------
-# Chequeos previos
+# Chequeos previos — el script VERIFICA la sesión, no la crea.
 # ---------------------------------------------------------------------------
+az account show -o none 2>/dev/null \
+  || { echo "No hay sesión de Azure. Corré 'az login --use-device-code' primero."; exit 1; }
+
 echo "==> Suscripción activa:"
 az account show --query "{nombre:name, id:id}" -o table
 
@@ -34,6 +40,17 @@ read -rp "¿Es la suscripción correcta? [s/N] " CONFIRMA
 [[ "$CONFIRMA" == "s" || "$CONFIRMA" == "S" ]] || { echo "Abortado."; exit 1; }
 
 read -rsp "Password del admin de SQL (min 8, may+min+numero+simbolo): " SQL_PASSWORD; echo
+
+# ---------------------------------------------------------------------------
+# Resource providers — ninguno está habilitado por defecto en una suscripción
+# nueva. Idempotente: si ya están registrados, no hace nada.
+# Sin esto el script NO es reproducible desde cero.
+# ---------------------------------------------------------------------------
+echo "==> Registrando resource providers (puede tardar unos minutos)"
+for RP in Microsoft.ServiceBus Microsoft.Sql Microsoft.App Microsoft.OperationalInsights; do
+  echo "    - $RP"
+  az provider register --namespace "$RP" --wait
+done
 
 # ---------------------------------------------------------------------------
 # Resource group — ya existe. Su location es solo metadata.
@@ -48,7 +65,7 @@ fi
 # ---------------------------------------------------------------------------
 # Service Bus
 # ---------------------------------------------------------------------------
-echo "==> Creando namespace $SB_NS (Standard) en $LOCATION"
+echo "==> Creando namespace $SB_NS (Standard) en $LOCATION — tarda 2 a 4 minutos"
 az servicebus namespace create \
   --resource-group "$RG" \
   --name "$SB_NS" \
@@ -80,7 +97,7 @@ az sql server create \
   -o none
 
 echo "==> Creando base $SQL_DB (free offer, AutoPause)"
-echo "    Si esto falla, el free offer no está en $LOCATION. Ver plan B en el README."
+echo "    Si falla acá, el free offer no está disponible en $LOCATION."
 az sql db create \
   --resource-group "$RG" \
   --server "$SQL_SERVER" \
