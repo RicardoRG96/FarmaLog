@@ -23,7 +23,7 @@ public class RepositorioDeSolicitudesTests
     {
         using NucleoDbContext contexto = new(Options());
         contexto.Database.EnsureDeleted();
-        contexto.Database.EnsureCreated();
+        contexto.Database.Migrate();
     }
 
     [TestMethod]
