@@ -44,8 +44,25 @@ namespace FarmaLog.Nucleo.Worker
             RegistrarSolicitudMessageDispatcher dispatcher =
                 scope.ServiceProvider.GetRequiredService<RegistrarSolicitudMessageDispatcher>();
 
-            MessageDestination destino = await dispatcher.DispatchAsync(
-                args.Message.Body.ToString(), args.CancellationToken);
+            MessageDestination destino;
+
+            try
+            {
+                destino = await dispatcher.DispatchAsync(
+                    args.Message.Body.ToString(), args.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                // Falla no clasificada = transitoria hasta que se demuestre lo contrario.
+                // NO se hace settlement: el lock expira y Service Bus reentrega en LockDuration.
+                // Dejar escapar la excepcion haria que el SDK abandone el mensaje
+                // (lo hace siempre, sin importar AutoCompleteMessages) y lo reentregue
+                // al instante, quemando los tres intentos en segundos.
+                logger.LogError(ex,
+                    "Falla no clasificada procesando {MessageId} (intento {Intento}). Se deja expirar el lock.",
+                    args.Message.MessageId, args.Message.DeliveryCount);
+                return;
+            }
 
             switch (destino)
             {

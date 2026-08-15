@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace FarmaLog.Nucleo.Infrastructure.Messaging
+﻿namespace FarmaLog.Nucleo.Infrastructure.Messaging
 {
     public sealed record RegistrarSolicitudMessage(
         string CodigoLaboratorio,
