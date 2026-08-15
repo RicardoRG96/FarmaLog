@@ -41,5 +41,13 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.AreEqual(expectedCodigo, codigoLab.Codigo);
         }
+
+        [TestMethod]
+        public void CodigoLaboratorio_ShouldThrow_When_TheValueIsNull()
+        {
+            //Act + Assert
+            Assert.ThrowsExactly<CodigoLaboratorioInvalidoException>(
+                () => CodigoLaboratorio.Create(null));
+        }
     }
 }
