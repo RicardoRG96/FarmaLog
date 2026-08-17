@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/infra/">
     <File Path="infra/provision.sh" />
+    <File Path="infra/teardown.sh" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".dockerignore" />
