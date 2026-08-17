@@ -28,12 +28,20 @@ SQL_ADMIN="farmalogadmin"
 
 WORKER_DIR="src/FarmaLog.Nucleo.Worker"
 ENV_FILE=".env.local"
+SECRETS_FILE=".secrets-comandos.local"
 
 # ---------------------------------------------------------------------------
 # Chequeos previos — el script VERIFICA la sesión, no la crea.
 # ---------------------------------------------------------------------------
 az account show -o none 2>/dev/null \
   || { echo "No hay sesión de Azure. Corré 'az login --use-device-code' primero."; exit 1; }
+
+# El script escribe secretos en la raíz del repo: se niega a correr si esos
+# archivos pueden terminar en un commit.
+for ARCHIVO in "$ENV_FILE" "$SECRETS_FILE"; do
+  grep -qxF "$ARCHIVO" .gitignore 2>/dev/null \
+    || { echo "FALTA en .gitignore: $ARCHIVO — agregalo antes de continuar."; exit 1; }
+done
 
 echo "==> Suscripción activa:"
 az account show --query "{nombre:name, id:id}" -o table
@@ -187,17 +195,40 @@ cat > "$ENV_FILE" <<EOF
 ConnectionStrings__ServiceBus=${SB_CONN}
 ConnectionStrings__NucleoDb=${SQL_CONN}
 EOF
-echo
-echo "==> Escrito $ENV_FILE (verificá que esté en .gitignore)"
+chmod 600 "$ENV_FILE"
+
+# Los comandos van a un archivo, NO a stdout: la pantalla se copia a chats,
+# capturas y tickets, y las connection strings llevan la password adentro.
+cat > "$SECRETS_FILE" <<EOF
+dotnet user-secrets set "ConnectionStrings:ServiceBus" "$SB_CONN" --project $WORKER_DIR
+dotnet user-secrets set "ConnectionStrings:NucleoDb" "$SQL_CONN" --project $WORKER_DIR
+EOF
+chmod 600 "$SECRETS_FILE"
 
 echo
 echo "================= NOMBRES ======================================"
 echo "SB_NS=$SB_NS"
 echo "SQL_SERVER=$SQL_SERVER"
 echo
-echo "================= CARGAR USER-SECRETS (copiar y pegar) ========="
-echo "dotnet user-secrets set \"ConnectionStrings:ServiceBus\" \"$SB_CONN\" --project $WORKER_DIR"
-echo "dotnet user-secrets set \"ConnectionStrings:NucleoDb\" \"$SQL_CONN\" --project $WORKER_DIR"
+echo "================= SECRETOS (fuera de pantalla) ================="
+echo "$ENV_FILE     -> alimenta 'docker run --env-file $ENV_FILE'"
+
+# Los user-secrets son la OTRA fuente de configuración: alimentan al worker en
+# Development (IDE y 'dotnet ef'). Se cargan acá para que no puedan divergir
+# de .env.local. Va al final y no aborta: si falla, los recursos de Azure ya
+# están creados y el script debe terminar informando, no reventar.
+# El redirect a /dev/null no es cosmético: 'user-secrets set' imprime el valor.
+if command -v dotnet >/dev/null 2>&1 && [[ -d "$WORKER_DIR" ]]; then
+  if dotnet user-secrets set "ConnectionStrings:ServiceBus" "$SB_CONN" --project "$WORKER_DIR" >/dev/null 2>&1 \
+  && dotnet user-secrets set "ConnectionStrings:NucleoDb"   "$SQL_CONN" --project "$WORKER_DIR" >/dev/null 2>&1; then
+    echo "user-secrets   -> cargados en $WORKER_DIR (estado fuera del repo)"
+  else
+    echo "user-secrets   -> FALLÓ. Cargalos a mano con:  bash $SECRETS_FILE"
+  fi
+else
+  echo "user-secrets   -> omitidos (falta el SDK de .NET o el proyecto)."
+  echo "                  Cargalos con:  bash $SECRETS_FILE"
+fi
 
 if [[ "$BASE_RECIEN_CREADA" == "true" ]]; then
   echo
