@@ -18,6 +18,9 @@
 set -euo pipefail
 
 RG="rg-farmalog"
+WORKER_DIR="src/FarmaLog.Nucleo.Worker"
+ENV_FILE=".env.local"
+SECRETS_FILE=".secrets-comandos.local"
 
 az account show -o none 2>/dev/null \
   || { echo "No hay sesión de Azure. Corré 'az login --use-device-code' primero."; exit 1; }
@@ -44,6 +47,30 @@ for NS in $(az servicebus namespace list -g "$RG" --query "[].name" -o tsv 2>/de
   echo "==> Borrando namespace $NS"
   az servicebus namespace delete -g "$RG" -n "$NS" -o none
 done
+
+# ---------------------------------------------------------------------------
+# Invalidar la configuración que acaba de quedar caduca.
+#
+# La connection string de Service Bus apunta a un namespace inexistente: si
+# sobrevive, el worker arranca y falla con un error de red o de credenciales
+# en vez de decir "falta configuración". Ausencia es un error legible;
+# valor caduco es una trampa.
+#
+# La de SQL NO se toca: ese servidor sigue vivo y sigue siendo válida.
+# ---------------------------------------------------------------------------
+if [[ -f "$ENV_FILE" ]]; then
+  grep -v '^ConnectionStrings__ServiceBus=' "$ENV_FILE" > "$ENV_FILE.tmp" || true
+  mv "$ENV_FILE.tmp" "$ENV_FILE"
+  chmod 600 "$ENV_FILE"
+  echo "==> $ENV_FILE: eliminada la entrada de Service Bus (la de SQL sigue válida)"
+fi
+
+rm -f "$SECRETS_FILE"
+
+if command -v dotnet >/dev/null 2>&1 && [[ -d "$WORKER_DIR" ]]; then
+  dotnet user-secrets remove "ConnectionStrings:ServiceBus" --project "$WORKER_DIR" >/dev/null 2>&1 || true
+  echo "==> user-secrets: eliminada la entrada de Service Bus"
+fi
 
 echo
 echo "==> Listo. Sobrevive:"
