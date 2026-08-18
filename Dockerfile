@@ -19,6 +19,7 @@ RUN dotnet publish src/FarmaLog.Nucleo.Worker/FarmaLog.Nucleo.Worker.csproj \
 # runtime, NO aspnet: este servicio no sirve HTTP.
 # Debian (bookworm/trixie-slim), NO alpine ni chiseled: incluye tzdata,
 # que RelojDelSistema necesita para resolver America/Santiago.
+LABEL org.opencontainers.image.source="https://github.com/RicardoRG96/FarmaLog"
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
