@@ -2,22 +2,38 @@
 #
 # FarmaLog — apagado selectivo de fin de jornada.
 #
-# Borra SOLO lo que cobra por hora exista o no tráfico:
-#   - Service Bus Standard (namespace + cola)
-#   - Container Apps y su entorno (cuando existan)
+# CRITERIO: se borra un recurso solo si su costo corre con el reloj Y su
+# recreación es barata. Los dos ejes, no uno.
 #
-# NO toca Azure SQL: con free limit no genera costo, y recrearlo cuesta hasta
-# una hora de espera hasta que se libere el slot del free offer. Borrar el
-# recurso barato con la penalización más alta es el peor negocio disponible.
+#   | Recurso            | Costo existiendo | Costo de recrear | Se borra |
+#   |--------------------|------------------|------------------|----------|
+#   | Service Bus Std.   | ~US$10/mes       | 2-4 min          | SÍ       |
+#   | Azure SQL free     | US$0             | hasta 1 hora     | NO       |
+#   | Container Apps env | US$0 (*)         | ~30 min          | NO       |
+#   | Container App      | US$0 (*)         | ~1 min           | NO       |
+#
+# (*) Con min-replicas 0, el plan de consumo no cobra uso mientras la app está
+#     escalada a cero, y el grant mensual gratuito (180.000 vCPU-s / 360.000
+#     GiB-s por suscripción) cubre varias veces el consumo activo de este
+#     proyecto. Verificado en la página de precios de Azure Container Apps.
+#
+# ⚠️ CAMBIO RESPECTO A LA VERSIÓN ANTERIOR: este script YA NO borra Container
+#    Apps. El criterio "borro lo que cobra por hora" siempre estuvo bien; lo
+#    que estaba mal era la clasificación de Container Apps bajo ese criterio.
+#    Es el mismo argumento que salva a Azure SQL: borrar el recurso barato con
+#    la penalización más alta es el peor negocio disponible.
 #
 # Para borrar TODO (fin de proyecto, o para probar el arranque desde cero):
 #   az group delete --name rg-farmalog --yes --no-wait
+#   ⚠️ Eso paga la penalización de una hora del free offer de SQL Y los ~30
+#      minutos del entorno de Container Apps.
 #
 # Uso: bash infra/teardown.sh
 
 set -euo pipefail
 
 RG="rg-farmalog"
+ACA_APP="ca-nucleo-worker"
 WORKER_DIR="src/FarmaLog.Nucleo.Worker"
 ENV_FILE=".env.local"
 SECRETS_FILE=".secrets-comandos.local"
@@ -28,21 +44,13 @@ az account show -o none 2>/dev/null \
 echo "==> Recursos actuales en $RG:"
 az resource list -g "$RG" --query "[].{nombre:name, tipo:type}" -o table
 
-read -rp "¿Borrar Service Bus y Container Apps? (SQL queda intacto) [s/N] " CONFIRMA
+echo
+echo "Se borra SOLO el namespace de Service Bus."
+echo "Sobreviven: Azure SQL, el entorno de Container Apps y $ACA_APP."
+read -rp "¿Continuar? [s/N] " CONFIRMA
 [[ "$CONFIRMA" == "s" || "$CONFIRMA" == "S" ]] || { echo "Abortado."; exit 1; }
 
-# --- Container Apps (pueden no existir todavía) -----------------------------
-for CA in $(az containerapp list -g "$RG" --query "[].name" -o tsv 2>/dev/null || true); do
-  echo "==> Borrando container app $CA"
-  az containerapp delete -g "$RG" -n "$CA" --yes -o none
-done
-
-for ENV in $(az containerapp env list -g "$RG" --query "[].name" -o tsv 2>/dev/null || true); do
-  echo "==> Borrando entorno de Container Apps $ENV"
-  az containerapp env delete -g "$RG" -n "$ENV" --yes -o none
-done
-
-# --- Service Bus ------------------------------------------------------------
+# --- Service Bus: lo único que cobra por hora exista o no tráfico -----------
 for NS in $(az servicebus namespace list -g "$RG" --query "[].name" -o tsv 2>/dev/null || true); do
   echo "==> Borrando namespace $NS"
   az servicebus namespace delete -g "$RG" -n "$NS" -o none
@@ -72,10 +80,31 @@ if command -v dotnet >/dev/null 2>&1 && [[ -d "$WORKER_DIR" ]]; then
   echo "==> user-secrets: eliminada la entrada de Service Bus"
 fi
 
+# ---------------------------------------------------------------------------
+# ASIMETRÍA DECLARADA, no olvidada.
+#
+# El secret 'sb-conn' del Container App también quedó caduco, y NO se retira.
+# La razón: el peligro de una configuración caduca es que alguien la consuma
+# por accidente. .env.local y los user-secrets los lee un proceso local en
+# cualquier momento, sin nada que lo detenga. El Container App, en cambio, no
+# puede hacer nada con esa cadena: KEDA no encuentra la cola, la app se queda
+# en cero réplicas y no procesa. El recurso que necesitaría para equivocarse
+# no existe.
+#
+# Retirarlo además exigiría desplegar una revisión que no referencie el secret
+# antes de poder borrarlo — más maquinaria que el riesgo que evita.
+# provision.sh lo repone antes de que haya una cola a la que atender.
+# ---------------------------------------------------------------------------
+if az containerapp show -g "$RG" -n "$ACA_APP" -o none 2>/dev/null; then
+  echo
+  echo "⚠️  $ACA_APP sigue en pie y su config de Service Bus quedó caduca."
+  echo "    No va a escalar hasta que corras provision.sh (que la repone)."
+fi
+
 echo
 echo "==> Listo. Sobrevive:"
 az resource list -g "$RG" --query "[].{nombre:name, tipo:type}" -o table
 echo
 echo "Mañana: bash infra/provision.sh"
-echo "El namespace nuevo tendrá otro nombre y otras claves, así que el script"
-echo "regenera .env.local y reimprime los comandos de user-secrets."
+echo "Crea el namespace nuevo y repone su configuración en los TRES destinos:"
+echo ".env.local, user-secrets y los secrets del Container App."

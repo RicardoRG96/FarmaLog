@@ -26,6 +26,20 @@ QUEUE="registrar-solicitud-ingreso"
 SQL_DB="farmalog-nucleo"
 SQL_ADMIN="farmalogadmin"
 
+# --- Container Apps --------------------------------------------------------
+# El entorno y la app SOBREVIVEN al teardown: con min-replicas 0 no generan
+# costo, y recrear el entorno cuesta ~30 minutos. Lo que este script repone
+# cada mañana no es el recurso: es su CONFIGURACIÓN, porque el namespace de
+# Service Bus sí se borra cada noche y nace con otro nombre y otras claves.
+ACA_ENV="cae-farmalog"
+ACA_APP="ca-nucleo-worker"
+ACA_MIN_REPLICAS=0
+ACA_MAX_REPLICAS=3                 # el techo lo fija Azure SQL (2 vCores), no las ganas de escalar
+SCALE_RULE="cola-solicitudes"
+SCALE_MESSAGE_COUNT=5              # mensajes pendientes objetivo POR RÉPLICA
+
+ACA_IMAGE="${FARMALOG_IMAGE:-ghcr.io/ricardorg96/farmalog-nucleo-worker:latest}"
+
 WORKER_DIR="src/FarmaLog.Nucleo.Worker"
 ENV_FILE=".env.local"
 SECRETS_FILE=".secrets-comandos.local"
@@ -42,6 +56,23 @@ for ARCHIVO in "$ENV_FILE" "$SECRETS_FILE"; do
   grep -qxF "$ARCHIVO" .gitignore 2>/dev/null \
     || { echo "FALTA en .gitignore: $ARCHIVO — agregalo antes de continuar."; exit 1; }
 done
+
+# Fail-fast sobre la imagen: si el placeholder sigue puesto, el bloque de
+# Container Apps fallaría RECIÉN al final, después de crear todo lo demás.
+# Mismo criterio que el guard del .gitignore: verificar antes de crear nada.
+if [[ "$ACA_IMAGE" == *CAMBIAME* ]]; then
+  echo "Falta la imagen de GHCR. Editá ACA_IMAGE en este script, o corré:"
+  echo "  FARMALOG_IMAGE=ghcr.io/<tu-usuario>/farmalog-nucleo-worker:latest bash infra/provision.sh"
+  exit 1
+fi
+
+# La extensión de Container Apps no viene con el CLI base.
+if az extension show --name containerapp -o none 2>/dev/null; then
+  echo "==> Extensión containerapp: presente"
+else
+  echo "==> Instalando extensión containerapp"
+  az extension add --name containerapp -o none
+fi
 
 echo "==> Suscripción activa:"
 az account show --query "{nombre:name, id:id}" -o table
@@ -181,7 +212,10 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Salida — el script deja el entorno USABLE, no solo creado.
+# Cadenas de conexión — se arman una sola vez y alimentan TRES destinos:
+# .env.local (contenedor local), user-secrets (Development) y los secrets del
+# Container App (Production en Azure). Duplicación de valor, no de decisión:
+# el riesgo no es tenerlas repetidas, es que se actualicen por separado.
 # ---------------------------------------------------------------------------
 SB_CONN=$(az servicebus namespace authorization-rule keys list \
   --resource-group "$RG" --namespace-name "$SB_NS" \
@@ -205,13 +239,87 @@ dotnet user-secrets set "ConnectionStrings:NucleoDb" "$SQL_CONN" --project $WORK
 EOF
 chmod 600 "$SECRETS_FILE"
 
+# ---------------------------------------------------------------------------
+# Container Apps — el TERCER destino de la configuración.
+#
+# El entorno y la app sobreviven al teardown; lo que caduca cada noche es su
+# configuración, porque el namespace de Service Bus nace con otro nombre y
+# otras claves. Este bloque repone esa configuración y converge al estado
+# deseado, exista la app o no.
+#
+# ⚠️ Por qué son DOS comandos y no uno:
+#   - Los secretos son de alcance APLICACIÓN. 'secret set' cambia el valor
+#     pero no reinicia nada: las réplicas seguirían leyendo el viejo.
+#   - Las reglas de escalado son de alcance REVISIÓN.
+#   Forzar una revisión nueva con --revision-suffix resuelve las dos: trae la
+#   regla de KEDA con el namespace nuevo Y obliga a releer los secretos.
+# ---------------------------------------------------------------------------
+if az containerapp env show -g "$RG" -n "$ACA_ENV" -o none 2>/dev/null; then
+  echo "==> Entorno de Container Apps $ACA_ENV: ya existe"
+else
+  echo "==> Creando entorno $ACA_ENV — tarda 2 a 3 minutos"
+  echo "    (crea de paso un workspace de Log Analytics: con cero réplicas los"
+  echo "     logs no se pueden consultar contra el proceso)"
+  az containerapp env create \
+    -g "$RG" -n "$ACA_ENV" \
+    --location "$LOCATION" \
+    -o none
+fi
+
+if az containerapp show -g "$RG" -n "$ACA_APP" -o none 2>/dev/null; then
+  echo "==> Container App $ACA_APP: existe — reponiendo configuración"
+
+  az containerapp secret set \
+    -g "$RG" -n "$ACA_APP" \
+    --secrets "sb-conn=$SB_CONN" "sql-conn=$SQL_CONN" \
+    -o none
+
+  az containerapp update \
+    -g "$RG" -n "$ACA_APP" \
+    --image "$ACA_IMAGE" \
+    --revision-suffix "cfg-$(date +%Y%m%d-%H%M%S)" \
+    --min-replicas "$ACA_MIN_REPLICAS" --max-replicas "$ACA_MAX_REPLICAS" \
+    --set-env-vars "ConnectionStrings__ServiceBus=secretref:sb-conn" \
+                   "ConnectionStrings__NucleoDb=secretref:sql-conn" \
+    --scale-rule-name "$SCALE_RULE" \
+    --scale-rule-type azure-servicebus \
+    --scale-rule-metadata "queueName=$QUEUE" \
+                          "messageCount=$SCALE_MESSAGE_COUNT" \
+                          "namespace=$SB_NS" \
+    --scale-rule-auth "connection=sb-conn" \
+    -o none
+else
+  echo "==> Creando Container App $ACA_APP (sin ingress: este proceso no escucha en ningún puerto)"
+  az containerapp create \
+    -g "$RG" -n "$ACA_APP" \
+    --environment "$ACA_ENV" \
+    --image "$ACA_IMAGE" \
+    --min-replicas "$ACA_MIN_REPLICAS" --max-replicas "$ACA_MAX_REPLICAS" \
+    --secrets "sb-conn=$SB_CONN" "sql-conn=$SQL_CONN" \
+    --env-vars "ConnectionStrings__ServiceBus=secretref:sb-conn" \
+               "ConnectionStrings__NucleoDb=secretref:sql-conn" \
+    --scale-rule-name "$SCALE_RULE" \
+    --scale-rule-type azure-servicebus \
+    --scale-rule-metadata "queueName=$QUEUE" \
+                          "messageCount=$SCALE_MESSAGE_COUNT" \
+                          "namespace=$SB_NS" \
+    --scale-rule-auth "connection=sb-conn" \
+    -o none
+fi
+
+echo "    Revisión nueva desplegada. Container Apps arranca UNA réplica sin"
+echo "    esperar al escalador; KEDA la baja a cero tras el enfriamiento."
+echo "    Esa réplica es un chequeo de arranque gratis contra la config real."
+
 echo
 echo "================= NOMBRES ======================================"
 echo "SB_NS=$SB_NS"
 echo "SQL_SERVER=$SQL_SERVER"
+echo "ACA_APP=$ACA_APP  (entorno $ACA_ENV)"
 echo
 echo "================= SECRETOS (fuera de pantalla) ================="
 echo "$ENV_FILE     -> alimenta 'docker run --env-file $ENV_FILE'"
+echo "Container App  -> secrets sb-conn / sql-conn repuestos en Azure"
 
 # Los user-secrets son la OTRA fuente de configuración: alimentan al worker en
 # Development (IDE y 'dotnet ef'). Se cargan acá para que no puedan divergir
@@ -241,5 +349,12 @@ fi
 
 echo
 echo "================= VERIFICACIÓN ================================="
+echo "# La cola conserva sus ajustes:"
 echo "az servicebus queue show -g $RG --namespace-name $SB_NS -n $QUEUE \\"
 echo "  --query \"{max:maxDeliveryCount, dup:requiresDuplicateDetection, ventana:duplicateDetectionHistoryTimeWindow, lock:lockDuration}\""
+echo
+echo "# La regla de escalado apunta al namespace de HOY:"
+echo "az containerapp show -g $RG -n $ACA_APP --query \"properties.template.scale\" -o json"
+echo
+echo "# El ciclo: debería bajar a 0 tras el enfriamiento (~5 min):"
+echo "az containerapp replica list -g $RG -n $ACA_APP -o table"
