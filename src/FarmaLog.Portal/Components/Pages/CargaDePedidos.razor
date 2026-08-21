@@ -1,0 +1,16 @@
+﻿@page "/carga-de-pedidos"
+
+<h3>CargaDePedidos</h3>
+
+<InputFile onchange="ArchivoSeleccionado" />
+
+@if (archivo is not null)
+{
+    <p>@archivo.Name - @archivo.ContentType - @archivo.Size bytes </p>
+}
+
+@code {
+    private IBrowserFile? archivo;
+
+    private void ArchivoSeleccionado(InputFileChangeEventArgs e) => archivo = e.File;
+}
