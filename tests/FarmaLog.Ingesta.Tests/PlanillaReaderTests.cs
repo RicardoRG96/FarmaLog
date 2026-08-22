@@ -4,8 +4,8 @@
     public class PlanillaReaderTests
     {
         private const string FileName = "template-real.xlsx";
-        private static Stream OpenFixture(string nombre) =>
-            File.OpenRead(Path.Combine("Fixtures", nombre));
+        private static Stream OpenFixture(string name) =>
+            File.OpenRead(Path.Combine("Fixtures", name));
 
         [TestMethod]
         public void PlanillaReader_Should_IgnoreFormattedButEmptyRows()

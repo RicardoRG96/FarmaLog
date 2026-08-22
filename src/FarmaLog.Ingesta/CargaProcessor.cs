@@ -12,16 +12,16 @@ namespace FarmaLog.Ingesta
 
         public async Task<ProcessingResult> ProcesarAsync(Stream planilla, CancellationToken ct)
         {
-            var pedidos = PedidoGrouper.Agrupar(reader.Read(planilla));
+            var pedidos = PedidoGrouper.Group(reader.Read(planilla));
 
             // FASE 1 — validar TODO. Un solo error aborta el archivo completo.
-            var errores = pedidos
-                .SelectMany(FormatValidator.Validar)
+            var errors = pedidos
+                .SelectMany(FormatValidator.Validate)
                 .Select(e => e.ToString())
                 .ToList();
 
-            if (errores.Count > 0)
-                return new ProcessingResult(0, errores);
+            if (errors.Count > 0)
+                return new ProcessingResult(0, errors);
 
             // FASE 2 — recién ahora se publica. Cero mensajes si hubo un solo error.
             foreach (var pedido in pedidos)
@@ -32,31 +32,31 @@ namespace FarmaLog.Ingesta
 
         private static ServiceBusMessage Construir(PedidoGroup pedido)
         {
-            var cabecera = pedido.Filas[0];
+            var header = pedido.Rows[0];
 
-            var mensaje = new RegistrarSolicitudIngreso(
+            var message = new RegistrarSolicitudIngreso(
                 CodigoLaboratorio: CodigoLaboratorio,
                 NumeroDelivery: pedido.NumeroDelivery,
-                CuentaCliente: CodigosD365Mapper.MapCuentaCliente(CodigoLaboratorio, cabecera.CuentaCliente),
-                DireccionDespacho: CodigosD365Mapper.MapDireccionDespacho(CodigoLaboratorio, cabecera.DireccionDespacho),
+                CuentaCliente: CodigosD365Mapper.MapCuentaCliente(CodigoLaboratorio, header.CuentaCliente),
+                DireccionDespacho: CodigosD365Mapper.MapDireccionDespacho(CodigoLaboratorio, header.DireccionDespacho),
                 TipoOrdenVenta: TipoOrdenVenta,
-                EsCenabast: cabecera.EsCenabast.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase),
-                DocumentoVentaCenabast: Nulo(cabecera.DocumentoVentaCenabast),
-                Observacion: Nulo(cabecera.Observacion),
-                FechaEntrega: string.IsNullOrWhiteSpace(cabecera.FechaEntrega)
+                EsCenabast: header.EsCenabast.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase),
+                DocumentoVentaCenabast: NullIfEmpty(header.DocumentoVentaCenabast),
+                Observacion: NullIfEmpty(header.Observacion),
+                FechaEntrega: string.IsNullOrWhiteSpace(header.FechaEntrega)
                     ? DateOnly.FromDateTime(DateTime.Today).AddDays(5)
-                    : DateOnly.ParseExact(cabecera.FechaEntrega, "dd/MM/yyyy", CultureInfo.InvariantCulture),
-                OrdenCompra: Nulo(cabecera.OrdenCompra),
-                Urgencia: cabecera.Urgencia.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase),
-                Lineas: [.. pedido.Filas.Select(f => new LineaDeMensaje(
-                    f.Sku, int.Parse(f.Cantidad), f.EstadoInventario, Nulo(f.Lote)))]);
+                    : DateOnly.ParseExact(header.FechaEntrega, "dd/MM/yyyy", CultureInfo.InvariantCulture),
+                OrdenCompra: NullIfEmpty(header.OrdenCompra),
+                Urgencia: header.Urgencia.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase),
+                Lineas: [.. pedido.Rows.Select(f => new LineaDeMensaje(
+                    f.Sku, int.Parse(f.Cantidad), f.EstadoInventario, NullIfEmpty(f.Lote)))]);
 
-            return new ServiceBusMessage(BinaryData.FromObjectAsJson(mensaje))
+            return new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
             {
                 MessageId = pedido.NumeroDelivery
             };
         }
 
-        private static string? Nulo(string v) => string.IsNullOrWhiteSpace(v) ? null : v;
+        private static string? NullIfEmpty(string v) => string.IsNullOrWhiteSpace(v) ? null : v;
     }
 }

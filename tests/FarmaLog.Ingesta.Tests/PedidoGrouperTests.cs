@@ -9,17 +9,17 @@
             //Arrange
             PlanillaRow[] filas =
             [
-                PlanillaRows.Una(numeroDeFila: 2, delivery: "DEL-1", sku: "SKU-A"),
-                PlanillaRows.Una(numeroDeFila: 3, delivery: "DEL-2", sku: "SKU-B"),
-                PlanillaRows.Una(numeroDeFila: 4, delivery: "DEL-1", sku: "SKU-C"),
+                PlanillaRows.One(numeroDeFila: 2, delivery: "DEL-1", sku: "SKU-A"),
+                PlanillaRows.One(numeroDeFila: 3, delivery: "DEL-2", sku: "SKU-B"),
+                PlanillaRows.One(numeroDeFila: 4, delivery: "DEL-1", sku: "SKU-C"),
             ];
 
             //Act
-            IReadOnlyList<PedidoGroup> pedidos = PedidoGrouper.Agrupar(filas);
+            IReadOnlyList<PedidoGroup> pedidos = PedidoGrouper.Group(filas);
 
             //Assert
             Assert.HasCount(2, pedidos);
-            Assert.HasCount(2, pedidos.Single(p => p.NumeroDelivery == "DEL-1").Filas);
+            Assert.HasCount(2, pedidos.Single(p => p.NumeroDelivery == "DEL-1").Rows);
         }
 
         [TestMethod]
@@ -28,13 +28,13 @@
             //Arrange
             PlanillaRow[] filas =
             [
-                PlanillaRows.Una(numeroDeFila: 2, delivery: "DEL-9"),
-                PlanillaRows.Una(numeroDeFila: 3, delivery: "DEL-1"),
-                PlanillaRows.Una(numeroDeFila: 4, delivery: "DEL-9"),
+                PlanillaRows.One(numeroDeFila: 2, delivery: "DEL-9"),
+                PlanillaRows.One(numeroDeFila: 3, delivery: "DEL-1"),
+                PlanillaRows.One(numeroDeFila: 4, delivery: "DEL-9"),
             ];
 
             //Act
-            IReadOnlyList<PedidoGroup> pedidos = PedidoGrouper.Agrupar(filas);
+            IReadOnlyList<PedidoGroup> pedidos = PedidoGrouper.Group(filas);
 
             //Assert
             CollectionAssert.AreEqual(

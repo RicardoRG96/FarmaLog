@@ -34,10 +34,10 @@ app.MapPost("/cargas", async (
 
     ProcessingResult resultado = await procesador.ProcesarAsync(buffer, ct);
 
-    return Results.Ok(new CargaResponse(resultado.PedidosPublicados, resultado.Errores));
+    return Results.Ok(new CargaResponse(resultado.PublishedPedidos, resultado.Errors));
 })
 .DisableAntiforgery();
 
 app.Run();
 
-internal sealed record CargaResponse(int PedidosPublicados, IReadOnlyList<string> Errores);
+internal sealed record CargaResponse(int PublishedPedidos, IReadOnlyList<string> Errores);

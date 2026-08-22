@@ -1,12 +1,12 @@
 ﻿namespace FarmaLog.Ingesta
 {
     internal sealed record ValidationError(
-        string Problema,
-        string ValorOfensor,
-        string Ubicacion,
-        string ComoCorregir)
+        string Problem,
+        string OffendingValue,
+        string location,
+        string HowToFix)
     {
         public override string ToString() =>
-            $"{Problema}: '{ValorOfensor}' en el pedido {Ubicacion}. {ComoCorregir}";
+            $"{Problem}: '{OffendingValue}' en el pedido {location}. {HowToFix}";
     }
 }

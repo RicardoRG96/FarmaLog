@@ -4,52 +4,52 @@ namespace FarmaLog.Ingesta
 {
     internal static class FormatValidator
     {
-        private const string FormatoFecha = "dd/MM/yyyy";
+        private const string DateFormat = "dd/MM/yyyy";
 
-        public static IReadOnlyList<ValidationError> Validar(PedidoGroup pedido)
+        public static IReadOnlyList<ValidationError> Validate(PedidoGroup pedido)
         {
-            List<ValidationError> errores = new();
+            List<ValidationError> errors = new();
 
-            foreach (PlanillaRow fila in pedido.Filas)
+            foreach (PlanillaRow row in pedido.Rows)
             {
-                Obligatoria(fila.CuentaCliente, "Cuenta de Cliente");
-                Obligatoria(fila.DireccionDespacho, "Código de Despacho");
-                Obligatoria(fila.Sku, "Código de Artículo");
-                Obligatoria(fila.Cantidad, "Cantidad");
-                Obligatoria(fila.EstadoInventario, "Estado del Inventario");
-                Obligatoria(fila.EsCenabast, "Pedido Cenabast");
+                Required(row.CuentaCliente, "Cuenta de Cliente");
+                Required(row.DireccionDespacho, "Código de Despacho");
+                Required(row.Sku, "Código de Artículo");
+                Required(row.Cantidad, "Cantidad");
+                Required(row.EstadoInventario, "Estado del Inventario");
+                Required(row.EsCenabast, "Pedido Cenabast");
 
-                if (EsSi(fila.EsCenabast) && string.IsNullOrWhiteSpace(fila.DocumentoVentaCenabast))
+                if (IsSi(row.EsCenabast) && string.IsNullOrWhiteSpace(row.DocumentoVentaCenabast))
                 {
-                    errores.Add(new ValidationError(
+                    errors.Add(new ValidationError(
                        "Falta el Documento de Venta Cenabast", "",
                         pedido.NumeroDelivery,
                         "La columna es obligatoria cuando Pedido Cenabast es SI."));
                 }
 
-                if (!string.IsNullOrWhiteSpace(fila.FechaEntrega) && 
-                    !DateOnly.TryParseExact(fila.FechaEntrega, FormatoFecha,
+                if (!string.IsNullOrWhiteSpace(row.FechaEntrega) && 
+                    !DateOnly.TryParseExact(row.FechaEntrega, DateFormat,
                         CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                 {
-                    errores.Add(new ValidationError(
-                        "Formato de fecha inválido", fila.FechaEntrega,
+                    errors.Add(new ValidationError(
+                        "Formato de fecha inválido", row.FechaEntrega,
                         pedido.NumeroDelivery,
-                        $"Use formato {FormatoFecha} (ej: 03/12/2026)."));
+                        $"Use formato {DateFormat} (ej: 03/12/2026)."));
                 }
 
-                void Obligatoria(string valor, string columna)
+                void Required(string value, string column)
                 {
-                    if (string.IsNullOrWhiteSpace(valor))
-                        errores.Add(new ValidationError(
-                            $"Falta {columna}", "", pedido.NumeroDelivery,
-                            $"Complete la columna '{columna}' en todas las filas del pedido."));
+                    if (string.IsNullOrWhiteSpace(value))
+                        errors.Add(new ValidationError(
+                            $"Falta {column}", "", pedido.NumeroDelivery,
+                            $"Complete la columna '{column}' en todas las filas del pedido."));
                 }
             }
 
-            return errores;
+            return errors;
         }
 
-        private static bool EsSi(string valor) =>
-            valor.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase);
+        private static bool IsSi(string value) =>
+            value.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase);
     }
 }
