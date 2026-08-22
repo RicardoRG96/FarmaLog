@@ -1,21 +1,21 @@
 ﻿namespace FarmaLog.Ingesta.Tests
 {
     [TestClass]
-    public class AgrupadorDePedidosTests
+    public class PedidoGrouperTests
     {
         [TestMethod]
         public void AgrupadorDePedidos_Should_GroupRowsSharingDeliveryNumber()
         {
             //Arrange
-            FilaCruda[] filas =
+            PlanillaRow[] filas =
             [
-                Filas.Una(numeroDeFila: 2, delivery: "DEL-1", sku: "SKU-A"),
-                Filas.Una(numeroDeFila: 3, delivery: "DEL-2", sku: "SKU-B"),
-                Filas.Una(numeroDeFila: 4, delivery: "DEL-1", sku: "SKU-C"),
+                PlanillaRows.Una(numeroDeFila: 2, delivery: "DEL-1", sku: "SKU-A"),
+                PlanillaRows.Una(numeroDeFila: 3, delivery: "DEL-2", sku: "SKU-B"),
+                PlanillaRows.Una(numeroDeFila: 4, delivery: "DEL-1", sku: "SKU-C"),
             ];
 
             //Act
-            IReadOnlyList<PedidoAgrupado> pedidos = AgrupadorDePedidos.Agrupar(filas);
+            IReadOnlyList<PedidoGroup> pedidos = PedidoGrouper.Agrupar(filas);
 
             //Assert
             Assert.HasCount(2, pedidos);
@@ -26,15 +26,15 @@
         public void AgrupadorDePedidos_Should_PreserveFirstAppearanceOrder()
         {
             //Arrange
-            FilaCruda[] filas =
+            PlanillaRow[] filas =
             [
-                Filas.Una(numeroDeFila: 2, delivery: "DEL-9"),
-                Filas.Una(numeroDeFila: 3, delivery: "DEL-1"),
-                Filas.Una(numeroDeFila: 4, delivery: "DEL-9"),
+                PlanillaRows.Una(numeroDeFila: 2, delivery: "DEL-9"),
+                PlanillaRows.Una(numeroDeFila: 3, delivery: "DEL-1"),
+                PlanillaRows.Una(numeroDeFila: 4, delivery: "DEL-9"),
             ];
 
             //Act
-            IReadOnlyList<PedidoAgrupado> pedidos = AgrupadorDePedidos.Agrupar(filas);
+            IReadOnlyList<PedidoGroup> pedidos = PedidoGrouper.Agrupar(filas);
 
             //Assert
             CollectionAssert.AreEqual(

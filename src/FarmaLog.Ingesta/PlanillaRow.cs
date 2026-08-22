@@ -1,6 +1,6 @@
 ﻿namespace FarmaLog.Ingesta
 {
-    internal sealed record FilaCruda(
+    internal sealed record PlanillaRow(
         int NumeroDeFila,
         string NumeroDelivery,          // A  cabecera
         string CuentaCliente,           // B  cabecera

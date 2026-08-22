@@ -15,7 +15,7 @@
             Stream planilla = OpenFixture(FileName);
 
             //Act
-            IReadOnlyList<FilaCruda> rows = reader.Read(planilla);
+            IReadOnlyList<PlanillaRow> rows = reader.Read(planilla);
 
             //Assert
             Assert.HasCount(1, rows,

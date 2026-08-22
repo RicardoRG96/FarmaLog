@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient<IProcesadorDeCargas, ClienteHttpDeIngesta>(c =>
+builder.Services.AddHttpClient<ICargaProcessor, IngestaHttpClient>(c =>
     c.BaseAddress = new Uri(builder.Configuration["Ingesta:BaseUrl"]
         ?? throw new InvalidOperationException("Falta Ingesta:BaseUrl.")));
 

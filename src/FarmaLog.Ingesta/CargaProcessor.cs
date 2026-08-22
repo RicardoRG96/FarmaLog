@@ -3,34 +3,34 @@ using System.Globalization;
 
 namespace FarmaLog.Ingesta
 {
-    internal sealed class ProcesadorDeCarga(PlanillaReader reader, ServiceBusSender emisor)
+    internal sealed class CargaProcessor(PlanillaReader reader, ServiceBusSender emisor)
     {
         // DEUDA DECLARADA: nivel ARCHIVO. Vienen de la sesión y del desplegable de
         // pantalla, que no existen todavía. Hoy son constantes.
         private const string CodigoLaboratorio = "23";
         private const string TipoOrdenVenta = "23F1";
 
-        public async Task<ResultadoDeProcesamiento> ProcesarAsync(Stream planilla, CancellationToken ct)
+        public async Task<ProcessingResult> ProcesarAsync(Stream planilla, CancellationToken ct)
         {
-            var pedidos = AgrupadorDePedidos.Agrupar(reader.Read(planilla));
+            var pedidos = PedidoGrouper.Agrupar(reader.Read(planilla));
 
             // FASE 1 — validar TODO. Un solo error aborta el archivo completo.
             var errores = pedidos
-                .SelectMany(ValidadorDeForma.Validar)
+                .SelectMany(FormatValidator.Validar)
                 .Select(e => e.ToString())
                 .ToList();
 
             if (errores.Count > 0)
-                return new ResultadoDeProcesamiento(0, errores);
+                return new ProcessingResult(0, errores);
 
             // FASE 2 — recién ahora se publica. Cero mensajes si hubo un solo error.
             foreach (var pedido in pedidos)
                 await emisor.SendMessageAsync(Construir(pedido), ct);
 
-            return new ResultadoDeProcesamiento(pedidos.Count, []);
+            return new ProcessingResult(pedidos.Count, []);
         }
 
-        private static ServiceBusMessage Construir(PedidoAgrupado pedido)
+        private static ServiceBusMessage Construir(PedidoGroup pedido)
         {
             var cabecera = pedido.Filas[0];
 

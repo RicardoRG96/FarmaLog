@@ -1,6 +1,6 @@
 ﻿namespace FarmaLog.Ingesta
 {
-    internal sealed record ResultadoDeProcesamiento(
+    internal sealed record ProcessingResult(
         int PedidosPublicados,
         IReadOnlyList<string> Errores)
     {

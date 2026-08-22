@@ -7,12 +7,12 @@ namespace FarmaLog.Ingesta
         private const int DeliveryColumn = 1;
         private const int FirstDataRow = 2;
 
-        public IReadOnlyList<FilaCruda> Read(Stream planilla)
+        public IReadOnlyList<PlanillaRow> Read(Stream planilla)
         {
             using XLWorkbook book = new(planilla);
             IXLWorksheet sheet = book.Worksheet(1);
 
-            List<FilaCruda> rows = [];
+            List<PlanillaRow> rows = [];
 
             foreach (var row in sheet.RowsUsed())
             {
@@ -22,7 +22,7 @@ namespace FarmaLog.Ingesta
 
                 if (string.IsNullOrWhiteSpace(delivery)) continue;
 
-                rows.Add(new FilaCruda(
+                rows.Add(new PlanillaRow(
                     row.RowNumber(),
                     delivery,
                     Text(row, 2), Text(row, 3), Text(row, 4),

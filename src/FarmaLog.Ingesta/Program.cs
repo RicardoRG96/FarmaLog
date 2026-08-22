@@ -16,7 +16,7 @@ builder.Services.AddSingleton(sp =>
 builder.Services.AddSingleton<PlanillaReader>();
 
 builder.Services.AddSingleton<PlanillaReader>();
-builder.Services.AddSingleton<ProcesadorDeCarga>();
+builder.Services.AddSingleton<CargaProcessor>();
 
 var app = builder.Build();
 
@@ -26,18 +26,18 @@ app.MapGet("/", () => "Ingesta viva");
 // navegador. El token CSRF protege contra un browser que adjunta cookies de
 // sesión por su cuenta, acá el emisor es el portal desde el servidor.
 app.MapPost("/cargas", async (
-    IFormFile archivo, PlanillaReader reader, ProcesadorDeCarga procesador, CancellationToken ct) =>
+    IFormFile archivo, PlanillaReader reader, CargaProcessor procesador, CancellationToken ct) =>
 {
     using MemoryStream buffer = new();
     await archivo.CopyToAsync(buffer, ct);
     buffer.Position = 0;
 
-    ResultadoDeProcesamiento resultado = await procesador.ProcesarAsync(buffer, ct);
+    ProcessingResult resultado = await procesador.ProcesarAsync(buffer, ct);
 
-    return Results.Ok(new RespuestaDeCarga(resultado.PedidosPublicados, resultado.Errores));
+    return Results.Ok(new CargaResponse(resultado.PedidosPublicados, resultado.Errores));
 })
 .DisableAntiforgery();
 
 app.Run();
 
-internal sealed record RespuestaDeCarga(int PedidosPublicados, IReadOnlyList<string> Errores);
+internal sealed record CargaResponse(int PedidosPublicados, IReadOnlyList<string> Errores);

@@ -2,15 +2,15 @@
 
 namespace FarmaLog.Ingesta
 {
-    internal static class ValidadorDeForma
+    internal static class FormatValidator
     {
         private const string FormatoFecha = "dd/MM/yyyy";
 
-        public static IReadOnlyList<ErrorDeValidacion> Validar(PedidoAgrupado pedido)
+        public static IReadOnlyList<ValidationError> Validar(PedidoGroup pedido)
         {
-            List<ErrorDeValidacion> errores = new();
+            List<ValidationError> errores = new();
 
-            foreach (FilaCruda fila in pedido.Filas)
+            foreach (PlanillaRow fila in pedido.Filas)
             {
                 Obligatoria(fila.CuentaCliente, "Cuenta de Cliente");
                 Obligatoria(fila.DireccionDespacho, "Código de Despacho");
@@ -21,7 +21,7 @@ namespace FarmaLog.Ingesta
 
                 if (EsSi(fila.EsCenabast) && string.IsNullOrWhiteSpace(fila.DocumentoVentaCenabast))
                 {
-                    errores.Add(new ErrorDeValidacion(
+                    errores.Add(new ValidationError(
                        "Falta el Documento de Venta Cenabast", "",
                         pedido.NumeroDelivery,
                         "La columna es obligatoria cuando Pedido Cenabast es SI."));
@@ -31,7 +31,7 @@ namespace FarmaLog.Ingesta
                     !DateOnly.TryParseExact(fila.FechaEntrega, FormatoFecha,
                         CultureInfo.InvariantCulture, DateTimeStyles.None, out _))
                 {
-                    errores.Add(new ErrorDeValidacion(
+                    errores.Add(new ValidationError(
                         "Formato de fecha inválido", fila.FechaEntrega,
                         pedido.NumeroDelivery,
                         $"Use formato {FormatoFecha} (ej: 03/12/2026)."));
@@ -40,7 +40,7 @@ namespace FarmaLog.Ingesta
                 void Obligatoria(string valor, string columna)
                 {
                     if (string.IsNullOrWhiteSpace(valor))
-                        errores.Add(new ErrorDeValidacion(
+                        errores.Add(new ValidationError(
                             $"Falta {columna}", "", pedido.NumeroDelivery,
                             $"Complete la columna '{columna}' en todas las filas del pedido."));
                 }

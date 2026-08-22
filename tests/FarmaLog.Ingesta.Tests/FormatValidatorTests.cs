@@ -1,19 +1,19 @@
 ﻿namespace FarmaLog.Ingesta.Tests
 {
     [TestClass]
-    public class ValidadorDeFormaTests
+    public class FormatValidatorTests
     {
-        private static PedidoAgrupado Pedido(params FilaCruda[] filas) =>
+        private static PedidoGroup Pedido(params PlanillaRow[] filas) =>
             new(filas[0].NumeroDelivery, filas);
 
         [TestMethod]
         public void ValidadorDeFormaTests_Should_ReportEmptyMandatoryCell()
         {
             //Arrange
-            PedidoAgrupado pedido = Pedido(Filas.Una(delivery: "DEL-1", cuenta: ""));
+            PedidoGroup pedido = Pedido(PlanillaRows.Una(delivery: "DEL-1", cuenta: ""));
 
             //Act
-            IReadOnlyList<ErrorDeValidacion> errores = ValidadorDeForma.Validar(pedido);
+            IReadOnlyList<ValidationError> errores = FormatValidator.Validar(pedido);
 
             //Assert
             Assert.HasCount(1, errores);
@@ -25,10 +25,10 @@
         public void ValidadorDeForma_Should_RejectDateNotInChileanFormat()
         {
             //Arrange
-            PedidoAgrupado pedido = Pedido(Filas.Una(delivery: "DEL-1", fecha: "09-12-2025"));
+            PedidoGroup pedido = Pedido(PlanillaRows.Una(delivery: "DEL-1", fecha: "09-12-2025"));
 
             //Act
-            IReadOnlyList<ErrorDeValidacion> errores = ValidadorDeForma.Validar(pedido);
+            IReadOnlyList<ValidationError> errores = FormatValidator.Validar(pedido);
 
             //Assert
             Assert.HasCount(1, errores);
@@ -40,20 +40,20 @@
         public void ValidadorDeForma_Should_AcceptEmptyDateBecauseColumnIsOptional()
         {
             //Arrange + Act
-            PedidoAgrupado pedido = Pedido(Filas.Una(delivery: "DEL-1", fecha: ""));
+            PedidoGroup pedido = Pedido(PlanillaRows.Una(delivery: "DEL-1", fecha: ""));
 
             //Assert
-            Assert.IsEmpty(ValidadorDeForma.Validar(pedido));
+            Assert.IsEmpty(FormatValidator.Validar(pedido));
         }
 
         [TestMethod]
         public void ValidadorDeForma_Should_RequireCenabastDocumentWhenOrderIsCenabast()
         {
             //Arrange
-            PedidoAgrupado pedido = Pedido(Filas.Una(delivery: "DEL-1", esCenabast: "SI", cenabast: ""));
+            PedidoGroup pedido = Pedido(PlanillaRows.Una(delivery: "DEL-1", esCenabast: "SI", cenabast: ""));
 
             //Act
-            IReadOnlyList<ErrorDeValidacion> errores = ValidadorDeForma.Validar(pedido);
+            IReadOnlyList<ValidationError> errores = FormatValidator.Validar(pedido);
 
             //Assert
             Assert.HasCount(1, errores);

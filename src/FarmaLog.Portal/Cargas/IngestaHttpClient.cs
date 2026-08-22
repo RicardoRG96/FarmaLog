@@ -2,7 +2,7 @@
 
 namespace FarmaLog.Portal.Cargas
 {
-    internal sealed class ClienteHttpDeIngesta(HttpClient http) : IProcesadorDeCargas
+    internal sealed class IngestaHttpClient(HttpClient http) : ICargaProcessor
     {
         public async Task<ResultadoDeCarga> ProcesarAsync(ArchivoDeCarga archivo, CancellationToken ct)
         {
