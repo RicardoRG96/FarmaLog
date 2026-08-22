@@ -2,25 +2,56 @@ using Azure.Messaging.ServiceBus;
 using FarmaLog.Ingesta;
 
 var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
 
-builder.Services.AddSingleton(_ => new ServiceBusClient(
-    builder.Configuration.GetConnectionString("ServiceBus")
-        ?? throw new InvalidOperationException("Falta ConnectionString:ServiceBus")));
+string? serviceBusConnectionString = builder.Configuration.GetConnectionString("ServiceBus");
+if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
+    throw new InvalidOperationException(
+        "Falta ConnectionStrings:ServiceBus.");
+
+builder.Services.AddSingleton(_ => new ServiceBusClient(serviceBusConnectionString));
 
 builder.Services.AddSingleton(sp =>
     sp.GetRequiredService<ServiceBusClient>().CreateSender("registrar-solicitud-ingreso"));
 
 builder.Services.AddSingleton<LectorDePlanilla>();
 
+var app = builder.Build();
+
 app.MapGet("/", () => "Ingesta viva");
 
 // DisableAntiforgery: este endpoint es servicio-a-servicio, no un formulario de
 // navegador. El token CSRF protege contra un browser que adjunta cookies de
 // sesión por su cuenta, acá el emisor es el portal desde el servidor.
-app.MapPost("/cargas", (IFormFile archivo) =>
-    Results.Ok(new RespuestaDeCarga(archivo.FileName, archivo.Length)))
-    .DisableAntiforgery();
+app.MapPost("/cargas", async (
+    IFormFile archivo, LectorDePlanilla lector, ServiceBusSender emisor, CancellationToken ct) =>
+{
+    using MemoryStream buffer = new();
+    await archivo.CopyToAsync(buffer, ct);
+    buffer.Position = 0;
+
+    string delivery = lector.LeerPrimerDelivery(buffer);
+
+    RegistrarSolicitudIngreso mensaje = new RegistrarSolicitudIngreso(
+        CodigoLaboratorio: "23",
+        NumeroDelivery: delivery,
+        CuentaCliente: "23-0778903671",
+        DireccionDespacho: "23-778903671D1",
+        TipoOrdenVenta: "23F1",
+        EsCenabast: false,
+        DocumentoVentaCenabast: null,
+        Observacion: "Esqueleto s17,",
+        FechaEntrega: DateOnly.FromDateTime(DateTime.Today).AddDays(5),
+        OrdenCompra: null,
+        Urgencia: false,
+        Lineas: [new LineaDeMensaje("SKU-000123", 10, "DISPONIBLE", "L2026A")]);
+
+    await emisor.SendMessageAsync(
+        new ServiceBusMessage(BinaryData.FromObjectAsJson(mensaje)) { MessageId = delivery },
+        ct);
+
+    return Results.Ok(new RespuestaDeCarga(archivo.FileName, archivo.Length));
+})
+.DisableAntiforgery();
 
 app.Run();
 
