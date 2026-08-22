@@ -1,0 +1,9 @@
+﻿namespace FarmaLog.Ingesta
+{
+    internal sealed record ResultadoDeProcesamiento(
+        int PedidosPublicados,
+        IReadOnlyList<string> Errores)
+    {
+        public bool Exitoso => Errores.Count == 0;
+    }
+}
