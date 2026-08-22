@@ -1,4 +1,4 @@
 ﻿namespace FarmaLog.Portal.Cargas
 {
-    public sealed record ResultadoDeCarga(int PedidosPublicados, IReadOnlyList<string> Errors);
+    public sealed record ResultadoDeCarga(int PublishedPedidos, IReadOnlyList<string> Errors);
 }

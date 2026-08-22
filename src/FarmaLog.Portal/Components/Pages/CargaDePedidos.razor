@@ -1,7 +1,7 @@
 ﻿@page "/carga-de-pedidos"
 @using FarmaLog.Portal.Cargas
 @rendermode InteractiveServer
-@inject ICargaProcessor Procesador
+@inject ICargaProcessor Processor
 
 <h3>CargaDePedidos</h3>
 
@@ -10,16 +10,16 @@
 @if (_archivo is not null)
 {
     <p>@_archivo.Name - @_archivo.ContentType - @_archivo.Size bytes </p>
-    <button @onclick="Procesar" disabled="@_enCurso">PROCESAR ARCHIVO</button>
+    <button @onclick="Procesar" disabled="@_inProgress">PROCESAR ARCHIVO</button>
 }
 
-@if (_resultado is not null)
+@if (_result is not null)
 {
-    @if (_resultado.Errors.Count > 0)
+    @if (_result.Errors.Count > 0)
     {
         <h4 style="color:#b00">Resumen de validación</h4>
         <ul>
-            @foreach (var e in _resultado.Errors)
+            @foreach (var e in _result.Errors)
             {
                 <li style="color:#b00">@e</li>
             }
@@ -28,7 +28,7 @@
     }
     else
     {
-        <p style="color:#060">Se procesaron @_resultado.PedidosPublicados pedido(s).</p>
+        <p style="color:#060">Se procesaron @_result.PublishedPedidos pedido(s).</p>
     }
 }
 
@@ -41,14 +41,14 @@
     private const long MaximoBytes = 5 * 1024 * 1024;
 
     private IBrowserFile? _archivo;
-    private ResultadoDeCarga? _resultado;
+    private ResultadoDeCarga? _result;
     private string? _error;
-    private bool _enCurso;
+    private bool _inProgress;
 
     private void Seleccionar(InputFileChangeEventArgs e)
     {
         _archivo = e.File;
-        _resultado = null;
+        _result = null;
         _error = null;
     }
 
@@ -56,12 +56,12 @@
     {
         if (_archivo is null) return;
 
-        _enCurso = true;
+        _inProgress = true;
         _error = null;
         try
         {
             await using Stream stream = _archivo.OpenReadStream(MaximoBytes);
-            _resultado = await Procesador.ProcesarAsync(
+            _result = await Processor.ProcesarAsync(
                 new ArchivoDeCarga(_archivo.Name, stream), CancellationToken.None);
         }
         catch (Exception ex)
@@ -70,7 +70,7 @@
         }
         finally
         {
-            _enCurso = false;
+            _inProgress = false;
         }
     }
 }

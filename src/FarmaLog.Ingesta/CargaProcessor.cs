@@ -12,21 +12,21 @@ namespace FarmaLog.Ingesta
 
         public async Task<ProcessingResult> ProcesarAsync(Stream planilla, CancellationToken ct)
         {
-            var rows = reader.Read(planilla);
+            IReadOnlyList<PlanillaRow> rows = reader.Read(planilla);
 
             // ANTES de agrupar: sin Delivery no hay pedido al cual atribuir el
             // error. Único caso reportado por número de fila y no por pedido.
-            var orphanErrors = rows
+            List<string> orphanErrors = rows
                 .Where(r => string.IsNullOrWhiteSpace(r.NumeroDelivery))
                 .Select(r => $"Falta el Número Pedido del Laboratorio en la fila {r.RowNumber}. " +
                              "Complete la columna A o elimine la fila.")
                 .ToList();
 
-            var pedidos = PedidoGrouper.Group(
+            IReadOnlyList<PedidoGroup> pedidos = PedidoGrouper.Group(
                 [.. rows.Where(r => !string.IsNullOrWhiteSpace(r.NumeroDelivery))]);
 
             // FASE 1 — validar TODO. Un solo error aborta el archivo completo.
-            var errors = orphanErrors
+            List<string> errors = orphanErrors
                 .Concat(pedidos.SelectMany(FormatValidator.Validate).Select(e => e.ToString()))
                 .ToList();
 
@@ -45,11 +45,11 @@ namespace FarmaLog.Ingesta
             // Tomar la primera fila es pérdida silenciosa si las cabeceras del
             // grupo discrepan. DEUDA: falta la validación de coherencia de
             // cabecera. Está aislada en esta línea a propósito.
-            var header = pedido.Rows[0];
+            PlanillaRow header = pedido.Rows[0];
 
             // ParseExact e int.Parse sin Try son deliberados: la fase 1 ya
             // garantizó que son parseables. Si lanzan, es un bug propio.
-            var message = new RegistrarSolicitudIngreso(
+            RegistrarSolicitudIngreso message = new(
                 CodigoLaboratorio: CodigoLaboratorio,
                 NumeroDelivery: pedido.NumeroDelivery,
                 CuentaCliente: CodigosD365Mapper.MapCuentaCliente(CodigoLaboratorio, header.CuentaCliente),

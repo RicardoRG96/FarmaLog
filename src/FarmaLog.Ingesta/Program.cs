@@ -32,9 +32,9 @@ app.MapPost("/cargas", async (
     await archivo.CopyToAsync(buffer, ct);
     buffer.Position = 0;
 
-    ProcessingResult resultado = await procesador.ProcesarAsync(buffer, ct);
+    ProcessingResult result = await procesador.ProcesarAsync(buffer, ct);
 
-    return Results.Ok(new CargaResponse(resultado.PublishedPedidos, resultado.Errors));
+    return Results.Ok(new CargaResponse(result.PublishedPedidos, result.Errors));
 })
 .DisableAntiforgery();
 
