@@ -44,5 +44,17 @@
             CollectionAssert.AreEqual(expected, real.ToArray(),
                 "El template cambió de forma. Las columnas se leen por posición fija.");
         }
+
+        [TestMethod]
+        public void PlanillaReader_Should_KeepRowWithDataButNoDeliveryNumber()
+        {
+            using var planilla = OpenFixture("fixture-fila-sin-delivery.xlsx");
+
+            var filas = new PlanillaReader().Read(planilla);
+
+            Assert.HasCount(2, filas,
+                "Una fila con datos y sin Delivery es un error del usuario, no una fila fantasma.");
+            Assert.AreEqual("", filas[1].NumeroDelivery);
+        }
     }
 }

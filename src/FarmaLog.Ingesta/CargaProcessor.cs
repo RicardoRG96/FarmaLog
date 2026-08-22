@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace FarmaLog.Ingesta
 {
-    internal sealed class CargaProcessor(PlanillaReader reader, ServiceBusSender emisor)
+    internal sealed class CargaProcessor(PlanillaReader reader, ServiceBusSender sender)
     {
         // DEUDA DECLARADA: nivel ARCHIVO. Vienen de la sesión y del desplegable de
         // pantalla, que no existen todavía. Hoy son constantes.
@@ -12,12 +12,22 @@ namespace FarmaLog.Ingesta
 
         public async Task<ProcessingResult> ProcesarAsync(Stream planilla, CancellationToken ct)
         {
-            var pedidos = PedidoGrouper.Group(reader.Read(planilla));
+            var rows = reader.Read(planilla);
+
+            // ANTES de agrupar: sin Delivery no hay pedido al cual atribuir el
+            // error. Único caso reportado por número de fila y no por pedido.
+            var orphanErrors = rows
+                .Where(r => string.IsNullOrWhiteSpace(r.NumeroDelivery))
+                .Select(r => $"Falta el Número Pedido del Laboratorio en la fila {r.RowNumber}. " +
+                             "Complete la columna A o elimine la fila.")
+                .ToList();
+
+            var pedidos = PedidoGrouper.Group(
+                [.. rows.Where(r => !string.IsNullOrWhiteSpace(r.NumeroDelivery))]);
 
             // FASE 1 — validar TODO. Un solo error aborta el archivo completo.
-            var errors = pedidos
-                .SelectMany(FormatValidator.Validate)
-                .Select(e => e.ToString())
+            var errors = orphanErrors
+                .Concat(pedidos.SelectMany(FormatValidator.Validate).Select(e => e.ToString()))
                 .ToList();
 
             if (errors.Count > 0)
@@ -25,37 +35,45 @@ namespace FarmaLog.Ingesta
 
             // FASE 2 — recién ahora se publica. Cero mensajes si hubo un solo error.
             foreach (var pedido in pedidos)
-                await emisor.SendMessageAsync(Construir(pedido), ct);
+                await sender.SendMessageAsync(Build(pedido), ct);
 
             return new ProcessingResult(pedidos.Count, []);
         }
 
-        private static ServiceBusMessage Construir(PedidoGroup pedido)
+        private static ServiceBusMessage Build(PedidoGroup pedido)
         {
+            // Tomar la primera fila es pérdida silenciosa si las cabeceras del
+            // grupo discrepan. DEUDA: falta la validación de coherencia de
+            // cabecera. Está aislada en esta línea a propósito.
             var header = pedido.Rows[0];
 
+            // ParseExact e int.Parse sin Try son deliberados: la fase 1 ya
+            // garantizó que son parseables. Si lanzan, es un bug propio.
             var message = new RegistrarSolicitudIngreso(
                 CodigoLaboratorio: CodigoLaboratorio,
                 NumeroDelivery: pedido.NumeroDelivery,
                 CuentaCliente: CodigosD365Mapper.MapCuentaCliente(CodigoLaboratorio, header.CuentaCliente),
                 DireccionDespacho: CodigosD365Mapper.MapDireccionDespacho(CodigoLaboratorio, header.DireccionDespacho),
                 TipoOrdenVenta: TipoOrdenVenta,
-                EsCenabast: header.EsCenabast.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase),
+                EsCenabast: IsSi(header.EsCenabast),
                 DocumentoVentaCenabast: NullIfEmpty(header.DocumentoVentaCenabast),
                 Observacion: NullIfEmpty(header.Observacion),
                 FechaEntrega: string.IsNullOrWhiteSpace(header.FechaEntrega)
                     ? DateOnly.FromDateTime(DateTime.Today).AddDays(5)
                     : DateOnly.ParseExact(header.FechaEntrega, "dd/MM/yyyy", CultureInfo.InvariantCulture),
                 OrdenCompra: NullIfEmpty(header.OrdenCompra),
-                Urgencia: header.Urgencia.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase),
-                Lineas: [.. pedido.Rows.Select(f => new LineaDeMensaje(
-                    f.Sku, int.Parse(f.Cantidad), f.EstadoInventario, NullIfEmpty(f.Lote)))]);
+                Urgencia: IsSi(header.Urgencia),
+                Lineas: [.. pedido.Rows.Select(r => new LineaDeMensaje(
+                    r.Sku, int.Parse(r.Cantidad), r.EstadoInventario, NullIfEmpty(r.Lote)))]);
 
             return new ServiceBusMessage(BinaryData.FromObjectAsJson(message))
             {
                 MessageId = pedido.NumeroDelivery
             };
         }
+
+        private static bool IsSi(string value) =>
+            value.Trim().Equals("SI", StringComparison.OrdinalIgnoreCase);
 
         private static string? NullIfEmpty(string v) => string.IsNullOrWhiteSpace(v) ? null : v;
     }
