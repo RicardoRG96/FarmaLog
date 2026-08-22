@@ -15,6 +15,9 @@ builder.Services.AddSingleton(sp =>
 
 builder.Services.AddSingleton<PlanillaReader>();
 
+builder.Services.AddSingleton<PlanillaReader>();
+builder.Services.AddSingleton<ProcesadorDeCarga>();
+
 var app = builder.Build();
 
 app.MapGet("/", () => "Ingesta viva");
@@ -23,37 +26,18 @@ app.MapGet("/", () => "Ingesta viva");
 // navegador. El token CSRF protege contra un browser que adjunta cookies de
 // sesión por su cuenta, acá el emisor es el portal desde el servidor.
 app.MapPost("/cargas", async (
-    IFormFile archivo, PlanillaReader reader, ServiceBusSender emisor, CancellationToken ct) =>
+    IFormFile archivo, PlanillaReader reader, ProcesadorDeCarga procesador, CancellationToken ct) =>
 {
     using MemoryStream buffer = new();
     await archivo.CopyToAsync(buffer, ct);
     buffer.Position = 0;
 
-    IReadOnlyList <FilaCruda> rows = reader.Read(buffer);
-    string delivery = rows[0].NumeroDelivery;
+    ResultadoDeProcesamiento resultado = await procesador.ProcesarAsync(buffer, ct);
 
-    RegistrarSolicitudIngreso mensaje = new RegistrarSolicitudIngreso(
-        CodigoLaboratorio: "23",
-        NumeroDelivery: delivery,
-        CuentaCliente: "23-0778903671",
-        DireccionDespacho: "23-778903671D1",
-        TipoOrdenVenta: "23F1",
-        EsCenabast: false,
-        DocumentoVentaCenabast: null,
-        Observacion: "Esqueleto s17,",
-        FechaEntrega: DateOnly.FromDateTime(DateTime.Today).AddDays(5),
-        OrdenCompra: null,
-        Urgencia: false,
-        Lineas: [new LineaDeMensaje("SKU-000123", 10, "DISPONIBLE", "L2026A")]);
-
-    await emisor.SendMessageAsync(
-        new ServiceBusMessage(BinaryData.FromObjectAsJson(mensaje)) { MessageId = delivery },
-        ct);
-
-    return Results.Ok(new RespuestaDeCarga(archivo.FileName, archivo.Length));
+    return Results.Ok(new RespuestaDeCarga(resultado.PedidosPublicados, resultado.Errores));
 })
 .DisableAntiforgery();
 
 app.Run();
 
-internal sealed record RespuestaDeCarga(string NombreArchivo, long Bytes);
+internal sealed record RespuestaDeCarga(int PedidosPublicados, IReadOnlyList<string> Errores);
