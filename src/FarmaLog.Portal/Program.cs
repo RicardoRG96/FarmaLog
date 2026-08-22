@@ -1,3 +1,4 @@
+using FarmaLog.Portal.Cargas;
 using FarmaLog.Portal.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddHttpClient<IProcesadorDeCargas, ClienteHttpDeIngesta>(c =>
+    c.BaseAddress = new Uri(builder.Configuration["Ingesta:BaseUrl"]
+        ?? throw new InvalidOperationException("Falta Ingesta:BaseUrl.")));
 
 var app = builder.Build();
 
