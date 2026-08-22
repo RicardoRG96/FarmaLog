@@ -1,5 +1,17 @@
+using Azure.Messaging.ServiceBus;
+using FarmaLog.Ingesta;
+
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
+
+builder.Services.AddSingleton(_ => new ServiceBusClient(
+    builder.Configuration.GetConnectionString("ServiceBus")
+        ?? throw new InvalidOperationException("Falta ConnectionString:ServiceBus")));
+
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<ServiceBusClient>().CreateSender("registrar-solicitud-ingreso"));
+
+builder.Services.AddSingleton<LectorDePlanilla>();
 
 app.MapGet("/", () => "Ingesta viva");
 
