@@ -1,17 +1,62 @@
 ﻿@page "/carga-de-pedidos"
+@using FarmaLog.Portal.Cargas
 @rendermode InteractiveServer
+@inject IProcesadorDeCargas Procesador
 
 <h3>CargaDePedidos</h3>
 
-<InputFile onchange="ArchivoSeleccionado" />
+<InputFile onchange="Seleccionar" accept=".xlsx"/>
 
-@if (archivo is not null)
+@if (_archivo is not null)
 {
-    <p>@archivo.Name - @archivo.ContentType - @archivo.Size bytes </p>
+    <p>@_archivo.Name - @_archivo.ContentType - @_archivo.Size bytes </p>
+    <button @onclick="Procesar" disabled="@_enCurso">PROCESAR ARCHIVO</button>
+}
+
+@if (_resultado is not null)
+{
+    <p>Ingesta recibió <b>@_resultado.NombreArchivo</b> - @_resultado.Bytes Bytes</p>
+}
+
+@if (_error is not null)
+{
+    <p style="color:red">@_error</p>
 }
 
 @code {
-    private IBrowserFile? archivo;
+    private const long MaximoBytes = 5 * 1024 * 1024;
 
-    private void ArchivoSeleccionado(InputFileChangeEventArgs e) => archivo = e.File;
+    private IBrowserFile? _archivo;
+    private ResultadoDeCarga? _resultado;
+    private string? _error;
+    private bool _enCurso;
+
+    private void Seleccionar(InputFileChangeEventArgs e)
+    {
+        _archivo = e.File;
+        _resultado = null;
+        _error = null;
+    }
+
+    private async Task Procesar()
+    {
+        if (_archivo is null) return;
+
+        _enCurso = true;
+        _error = null;
+        try
+        {
+            await using Stream stream = _archivo.OpenReadStream(MaximoBytes);
+            _resultado = await Procesador.ProcesarAsync(
+                new ArchivoDeCarga(_archivo.Name, stream), CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _enCurso = false;
+        }
+    }
 }
