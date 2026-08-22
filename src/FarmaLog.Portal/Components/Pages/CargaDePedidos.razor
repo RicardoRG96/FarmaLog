@@ -15,7 +15,21 @@
 
 @if (_resultado is not null)
 {
-    <p>Ingesta recibió <b>@_resultado.NombreArchivo</b> - @_resultado.Bytes Bytes</p>
+    @if (_resultado.Errores.Count > 0)
+    {
+        <h4 style="color:#b00">Resumen de validación</h4>
+        <ul>
+            @foreach (var e in _resultado.Errores)
+            {
+                <li style="color:#b00">@e</li>
+            }
+        </ul>
+        <p><b>No se procesó ningún pedido.</b> Corrija el archivo y vuelva a cargarlo.</p>
+    }
+    else
+    {
+        <p style="color:#060">Se procesaron @_resultado.PedidosPublicados pedido(s).</p>
+    }
 }
 
 @if (_error is not null)
