@@ -19,4 +19,12 @@
     <ProjectReference Include="..\..\src\FarmaLog.Ingesta\FarmaLog.Ingesta.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Fixtures\" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<None Update="Fixtures\*.xlsx" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
 </Project>

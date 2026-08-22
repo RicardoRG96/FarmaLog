@@ -13,7 +13,7 @@ builder.Services.AddSingleton(_ => new ServiceBusClient(serviceBusConnectionStri
 builder.Services.AddSingleton(sp =>
     sp.GetRequiredService<ServiceBusClient>().CreateSender("registrar-solicitud-ingreso"));
 
-builder.Services.AddSingleton<LectorDePlanilla>();
+builder.Services.AddSingleton<PlanillaReader>();
 
 var app = builder.Build();
 
@@ -23,13 +23,14 @@ app.MapGet("/", () => "Ingesta viva");
 // navegador. El token CSRF protege contra un browser que adjunta cookies de
 // sesión por su cuenta, acá el emisor es el portal desde el servidor.
 app.MapPost("/cargas", async (
-    IFormFile archivo, LectorDePlanilla lector, ServiceBusSender emisor, CancellationToken ct) =>
+    IFormFile archivo, PlanillaReader reader, ServiceBusSender emisor, CancellationToken ct) =>
 {
     using MemoryStream buffer = new();
     await archivo.CopyToAsync(buffer, ct);
     buffer.Position = 0;
 
-    string delivery = lector.LeerPrimerDelivery(buffer);
+    IReadOnlyList <FilaCruda> rows = reader.Read(buffer);
+    string delivery = rows[0].NumeroDelivery;
 
     RegistrarSolicitudIngreso mensaje = new RegistrarSolicitudIngreso(
         CodigoLaboratorio: "23",

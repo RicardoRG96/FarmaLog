@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.2" />
     <PackageReference Include="ClosedXML" Version="0.105.1" />
+	  <InternalsVisibleTo Include="FarmaLog.Ingesta.Tests"/>
   </ItemGroup>
 
 </Project>
