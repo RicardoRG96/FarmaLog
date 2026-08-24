@@ -10,13 +10,17 @@ namespace FarmaLog.Ingesta
         {
             List<ValidationError> errors = new();
 
+            RequiredInAnyRow(r => r.Sku, "Código de Artículo");
+            RequiredInAnyRow(r => r.Cantidad, "Cantidad");
+            RequiredInAnyRow(r => r.EstadoInventario, "Estado del Inventario");
+
             foreach (PlanillaRow row in pedido.Rows)
             {
                 Required(row.CuentaCliente, "Cuenta de Cliente");
                 Required(row.DireccionDespacho, "Código de Despacho");
-                Required(row.Sku, "Código de Artículo");
-                Required(row.Cantidad, "Cantidad");
-                Required(row.EstadoInventario, "Estado del Inventario");
+                //Required(row.Sku, "Código de Artículo");
+                //Required(row.Cantidad, "Cantidad");
+                //Required(row.EstadoInventario, "Estado del Inventario");
                 Required(row.EsCenabast, "Pedido Cenabast");
 
                 if (IsSi(row.EsCenabast) && string.IsNullOrWhiteSpace(row.DocumentoVentaCenabast))
@@ -37,13 +41,22 @@ namespace FarmaLog.Ingesta
                         $"Use formato {DateFormat} (ej: 03/12/2026)."));
                 }
 
-                void Required(string value, string column)
-                {
-                    if (string.IsNullOrWhiteSpace(value))
-                        errors.Add(new ValidationError(
-                            $"Falta {column}", "", pedido.NumeroDelivery,
-                            $"Complete la columna '{column}' en todas las filas del pedido."));
-                }
+            }
+
+            void RequiredInAnyRow(Func<PlanillaRow, string> column, string columnName)
+            {
+                if (pedido.Rows.Any(r => string.IsNullOrWhiteSpace(column(r))))
+                    errors.Add(new ValidationError(
+                        $"Falta {columnName}", "", pedido.NumeroDelivery,
+                        $"Complete la columna '{columnName}' en todas las filas del pedido."));
+            }
+
+            void Required(string value, string column)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    errors.Add(new ValidationError(
+                        $"Falta {column}", "", pedido.NumeroDelivery,
+                        $"Complete la columna '{column}' en todas las filas del pedido."));
             }
 
             return errors;

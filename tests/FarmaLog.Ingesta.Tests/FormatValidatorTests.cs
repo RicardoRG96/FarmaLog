@@ -17,8 +17,8 @@
 
             //Assert
             Assert.HasCount(1, errors);
-            Assert.AreEqual("DEL-1", errors[0].location);
-            StringAssert.Contains(errors[0].Problem, "Cuenta de Cliente");
+            Assert.AreEqual("DEL-1", errors[0].Location);
+            Assert.Contains("Cuenta de Cliente", errors[0].Problem);
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@
             //Assert
             Assert.HasCount(1, errors);
             Assert.AreEqual("09-12-2025", errors[0].OffendingValue);
-            StringAssert.Contains(errors[0].HowToFix, "dd/MM/yyyy");
+            Assert.Contains("dd/MM/yyyy", errors[0].HowToFix);
         }
 
         [TestMethod]
@@ -57,7 +57,23 @@
 
             //Assert
             Assert.HasCount(1, errors);
-            StringAssert.Contains(errors[0].Problem, "Cenabast");
+            Assert.Contains("Cenabast", errors[0].Problem);
+        }
+
+        [TestMethod]
+        public void FormatValidator_Should_ReportOneErrorPerRule_When_ManyRowsShareTheSameViolation()
+        {
+            // Arrange — dos líneas del mismo pedido, ambas sin SKU
+            PedidoGroup pedido = Pedido(
+                PlanillaRows.One(delivery: "DEL-1", sku: ""),
+                PlanillaRows.One(delivery: "DEL-1", sku: ""));
+
+            // Act
+            IReadOnlyList<ValidationError> errors = FormatValidator.Validate(pedido);
+
+            // Assert
+            Assert.HasCount(1, errors);
+            Assert.Contains("Código de Artículo", errors[0].Problem);
         }
     }
 }
