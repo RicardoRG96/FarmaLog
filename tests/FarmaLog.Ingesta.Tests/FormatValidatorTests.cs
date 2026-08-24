@@ -75,5 +75,21 @@
             Assert.HasCount(1, errors);
             Assert.Contains("Código de Artículo", errors[0].Problem);
         }
+
+        [TestMethod]
+        public void FormatValidator_Should_ReportHeaderRuleOncePerPedido_When_PedidoHasManyRows()
+        {
+            // Arrange — dos líneas del mismo pedido, misma fecha inválida en ambas
+            PedidoGroup pedido = Pedido(
+                PlanillaRows.One(delivery: "DEL-1", fecha: "22-09-2026"),
+                PlanillaRows.One(delivery: "DEL-1", fecha: "22-09-2026"));
+
+            // Act
+            IReadOnlyList<ValidationError> errors = FormatValidator.Validate(pedido);
+
+            // Assert
+            Assert.HasCount(1, errors);
+            Assert.Contains("Formato de fecha", errors[0].Problem);
+        }
     }
 }
