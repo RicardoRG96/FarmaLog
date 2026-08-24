@@ -11,6 +11,8 @@ namespace FarmaLog.Portal.Cargas
             streamContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
             content.Add(streamContent, "archivo", archivo.Name);
+            content.Add(new StringContent(archivo.CodigoLaboratorio), "codigoLaboratorio");
+            content.Add(new StringContent(archivo.TipoOrdenVenta), "tipoOrdenVenta");
 
             using HttpResponseMessage response = await http.PostAsync("/cargas", content, ct);
             response.EnsureSuccessStatusCode();

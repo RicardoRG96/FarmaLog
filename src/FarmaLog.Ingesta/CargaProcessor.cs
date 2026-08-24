@@ -5,12 +5,8 @@ namespace FarmaLog.Ingesta
 {
     internal sealed class CargaProcessor(PlanillaReader reader, ServiceBusSender sender)
     {
-        // DEUDA DECLARADA: nivel ARCHIVO. Vienen de la sesión y del desplegable de
-        // pantalla, que no existen todavía. Hoy son constantes.
-        private const string CodigoLaboratorio = "23";
-        private const string TipoOrdenVenta = "23F1";
-
-        public async Task<ProcessingResult> ProcesarAsync(Stream planilla, CancellationToken ct)
+        public async Task<ProcessingResult> ProcesarAsync(
+            Stream planilla, string codigoLaboratorio, string tipoOrdenVenta, CancellationToken ct)
         {
             IReadOnlyList<PlanillaRow> rows = reader.Read(planilla);
 
@@ -35,12 +31,13 @@ namespace FarmaLog.Ingesta
 
             // FASE 2 — recién ahora se publica. Cero mensajes si hubo un solo error.
             foreach (var pedido in pedidos)
-                await sender.SendMessageAsync(Build(pedido), ct);
+                await sender.SendMessageAsync(Build(pedido, codigoLaboratorio, tipoOrdenVenta), ct);
 
             return new ProcessingResult(pedidos.Count, []);
         }
 
-        private static ServiceBusMessage Build(PedidoGroup pedido)
+        private static ServiceBusMessage Build(
+            PedidoGroup pedido, string codigoLaboratorio, string tipoOrdenVenta)
         {
             // Tomar la primera fila es pérdida silenciosa si las cabeceras del
             // grupo discrepan. DEUDA: falta la validación de coherencia de
@@ -50,11 +47,11 @@ namespace FarmaLog.Ingesta
             // ParseExact e int.Parse sin Try son deliberados: la fase 1 ya
             // garantizó que son parseables. Si lanzan, es un bug propio.
             RegistrarSolicitudIngreso message = new(
-                CodigoLaboratorio: CodigoLaboratorio,
+                CodigoLaboratorio: codigoLaboratorio,
                 NumeroDelivery: pedido.NumeroDelivery,
-                CuentaCliente: CodigosD365Mapper.MapCuentaCliente(CodigoLaboratorio, header.CuentaCliente),
-                DireccionDespacho: CodigosD365Mapper.MapDireccionDespacho(CodigoLaboratorio, header.DireccionDespacho),
-                TipoOrdenVenta: TipoOrdenVenta,
+                CuentaCliente: CodigosD365Mapper.MapCuentaCliente(codigoLaboratorio, header.CuentaCliente),
+                DireccionDespacho: CodigosD365Mapper.MapDireccionDespacho(codigoLaboratorio, header.DireccionDespacho),
+                TipoOrdenVenta: tipoOrdenVenta,
                 EsCenabast: IsSi(header.EsCenabast),
                 DocumentoVentaCenabast: NullIfEmpty(header.DocumentoVentaCenabast),
                 Observacion: NullIfEmpty(header.Observacion),
