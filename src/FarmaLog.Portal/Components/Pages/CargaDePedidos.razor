@@ -43,12 +43,54 @@
         margin: .75rem 0;
     }
 
+    .selects {
+        margin-bottom: 1rem;
+    }
+
+        .selects label {
+            margin-right: .35rem;
+        }
+
+        .selects select {
+            margin-right: 1.25rem;
+        }
+
     .actions button {
-        margin-right: .5rem;
+        margin-left: .5rem;
     }
 </style>
 
 <h3>Carga de pedidos</h3>
+
+<div class="selects">
+    <label>Laboratorio:</label>
+    <select @onchange="CambiarLaboratorio" disabled="@_inProgress">
+        <option value="">— Seleccione —</option>
+        @foreach (var lab in Laboratorios)
+        {
+            <option value="@lab.Codigo" selected="@(lab.Codigo == _laboratorio)">
+                @lab.Nombre (@lab.Codigo)
+            </option>
+        }
+    </select>
+
+    <label>Tipo de orden:</label>
+    <select @key="_laboratorio" @bind="_tipoOrden"
+            disabled="@(_inProgress || _laboratorio is null)">
+        <option value="">— Seleccione —</option>
+        @if (_laboratorio is not null)
+        {
+            @foreach (var sufijo in Sufijos)
+            {
+                var codigo = $"{_laboratorio}{sufijo}";
+                <option value="@codigo">@codigo</option>
+            }
+        }
+    </select>
+
+    <label>Almacén:</label>
+    <select disabled><option selected>FLC1</option></select>
+</div>
 
 <div class="actions">
     <InputFile @key="_inputKey" onchange="Seleccionar" accept=".xlsx" />
@@ -58,7 +100,8 @@
 @if (_archivo is not null)
 {
     <p class="file-row">@_archivo.Name — @_archivo.Size bytes</p>
-    <button @onclick="Procesar" disabled="@_inProgress">
+    <button @onclick="Procesar"
+            disabled="@(_inProgress || _laboratorio is null || string.IsNullOrEmpty(_tipoOrden))">
         @(_inProgress ? "PROCESANDO…" : "PROCESAR ARCHIVO")
     </button>
 }
@@ -94,11 +137,35 @@
 @code {
     private const long MaximoBytes = 5 * 1024 * 1024;
 
+    // DEUDA DECLARADA: el dueño de este catálogo no es el Portal.
+    private record Laboratorio(string Codigo, string Nombre);
+
+    private static readonly Laboratorio[] Laboratorios =
+    [
+        new("23", "Boehringer Ingelheim"),
+        new("53", "Novartis"),
+        new("58", "Ferrer")
+    ];
+
+    private static readonly string[] Sufijos = ["F1", "G3", "G6"];
+
     private IBrowserFile? _archivo;
     private ResultadoDeCarga? _result;
     private string? _error;
     private bool _inProgress;
     private int _inputKey;
+    private string? _laboratorio;
+    private string? _tipoOrden;
+
+    private void CambiarLaboratorio(ChangeEventArgs e)
+    {
+        string? valor = e.Value?.ToString();
+        _laboratorio = string.IsNullOrEmpty(valor) ? null : valor;
+
+        _tipoOrden = null;
+        _result = null;
+        _error = null;
+    }
 
     private void Seleccionar(InputFileChangeEventArgs e)
     {
@@ -112,22 +179,22 @@
         _archivo = null;
         _result = null;
         _error = null;
-        _inputKey++;   // fuerza a Blazor a recrear el <input>, que conserva
-                       // el nombre del archivo aunque se limpie el estado de C#
+        _inputKey++;
     }
 
     private async Task Procesar()
     {
-        if (_archivo is null) return;
+        if (_archivo is null || _laboratorio is null || string.IsNullOrEmpty(_tipoOrden)) return;
 
         _inProgress = true;
         _error = null;
-        _result = null;   // el resultado anterior no debe sobrevivir a una corrida nueva
+        _result = null;
         try
         {
             await using Stream stream = _archivo.OpenReadStream(MaximoBytes);
             _result = await Processor.ProcesarAsync(
-                new ArchivoDeCarga(_archivo.Name, stream), CancellationToken.None);
+                new ArchivoDeCarga(_archivo.Name, stream, _laboratorio, _tipoOrden),
+                CancellationToken.None);
         }
         catch (Exception ex)
         {
