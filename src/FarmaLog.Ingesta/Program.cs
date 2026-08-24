@@ -4,9 +4,10 @@ using FarmaLog.Ingesta;
 var builder = WebApplication.CreateBuilder(args);
 
 string? serviceBusConnectionString = builder.Configuration.GetConnectionString("ServiceBus");
-if (string.IsNullOrWhiteSpace(serviceBusConnectionString))
+if (string.IsNullOrWhiteSpace(serviceBusConnectionString) || 
+    !serviceBusConnectionString.Contains("SharedAccessKey="))
     throw new InvalidOperationException(
-        "Falta ConnectionStrings:ServiceBus.");
+        "ConnectionStrings:ServiceBus ausente o truncada. ¿Cargaste .env.local con el bucle while, no con source?");
 
 builder.Services.AddSingleton(_ => new ServiceBusClient(serviceBusConnectionString));
 
@@ -17,7 +18,6 @@ builder.Services.AddSingleton<PlanillaReader>();
 
 builder.Services.AddSingleton<PlanillaReader>();
 builder.Services.AddSingleton<CargaProcessor>();
-
 var app = builder.Build();
 
 app.MapGet("/", () => "Ingesta viva");
@@ -40,4 +40,4 @@ app.MapPost("/cargas", async (
 
 app.Run();
 
-internal sealed record CargaResponse(int PublishedPedidos, IReadOnlyList<string> Errores);
+internal sealed record CargaResponse(int PublishedPedidos, IReadOnlyList<string> Errors);
