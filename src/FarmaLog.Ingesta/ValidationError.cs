@@ -3,10 +3,10 @@
     internal sealed record ValidationError(
         string Problem,
         string OffendingValue,
-        string location,
+        string Location,
         string HowToFix)
     {
         public override string ToString() =>
-            $"{Problem}: '{OffendingValue}' en el pedido {location}. {HowToFix}";
+            $"{Problem}: '{OffendingValue}' en el pedido {Location}. {HowToFix}";
     }
 }
