@@ -1,6 +1,6 @@
 ﻿using FarmaLog.Ingesta.Publishing;
 
-namespace FarmaLog.Ingesta.Tests
+namespace FarmaLog.Ingesta.Tests.Publishing
 {
     [TestClass]
     public class CodigosD365MapperTests

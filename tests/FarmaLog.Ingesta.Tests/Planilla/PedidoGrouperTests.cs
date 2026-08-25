@@ -1,6 +1,6 @@
 ﻿using FarmaLog.Ingesta.Planilla;
 
-namespace FarmaLog.Ingesta.Tests
+namespace FarmaLog.Ingesta.Tests.Planilla
 {
     [TestClass]
     public class PedidoGrouperTests
