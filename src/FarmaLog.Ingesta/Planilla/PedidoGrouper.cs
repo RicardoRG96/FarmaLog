@@ -1,4 +1,4 @@
-﻿namespace FarmaLog.Ingesta
+﻿namespace FarmaLog.Ingesta.Planilla
 {
     internal static class PedidoGrouper
     {

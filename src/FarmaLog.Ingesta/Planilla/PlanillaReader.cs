@@ -1,6 +1,6 @@
 ﻿using ClosedXML.Excel;
 
-namespace FarmaLog.Ingesta
+namespace FarmaLog.Ingesta.Planilla
 {
     internal sealed class PlanillaReader
     {

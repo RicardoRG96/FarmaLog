@@ -1,5 +1,6 @@
 using Azure.Messaging.ServiceBus;
-using FarmaLog.Ingesta;
+using FarmaLog.Ingesta.Api;
+using FarmaLog.Ingesta.Planilla;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -44,5 +45,3 @@ app.MapPost("/cargas", async (
 .DisableAntiforgery();
 
 app.Run();
-
-internal sealed record CargaResponse(int PublishedPedidos, IReadOnlyList<string> Errors);

@@ -1,6 +1,7 @@
-﻿using System.Globalization;
+﻿using FarmaLog.Ingesta.Planilla;
+using System.Globalization;
 
-namespace FarmaLog.Ingesta
+namespace FarmaLog.Ingesta.Validation
 {
     internal static class FormatValidator
     {

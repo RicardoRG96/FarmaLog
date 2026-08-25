@@ -1,4 +1,6 @@
-﻿namespace FarmaLog.Ingesta.Tests
+﻿using FarmaLog.Ingesta.Planilla;
+
+namespace FarmaLog.Ingesta.Tests
 {
     [TestClass]
     public class PlanillaReaderTests

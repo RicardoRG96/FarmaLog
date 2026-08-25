@@ -1,4 +1,4 @@
-﻿namespace FarmaLog.Ingesta
+﻿namespace FarmaLog.Ingesta.Validation
 {
     internal sealed record ValidationError(
         string Problem,

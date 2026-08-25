@@ -1,4 +1,4 @@
-﻿namespace FarmaLog.Ingesta
+﻿namespace FarmaLog.Ingesta.Publishing
 {
     internal sealed class CodigosD365Mapper
     {

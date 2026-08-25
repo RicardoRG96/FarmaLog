@@ -1,4 +1,7 @@
-﻿namespace FarmaLog.Ingesta.Tests
+﻿using FarmaLog.Ingesta.Planilla;
+using FarmaLog.Ingesta.Validation;
+
+namespace FarmaLog.Ingesta.Tests
 {
     [TestClass]
     public class FormatValidatorTests

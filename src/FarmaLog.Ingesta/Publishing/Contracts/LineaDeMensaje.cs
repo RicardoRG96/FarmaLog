@@ -1,4 +1,4 @@
-﻿namespace FarmaLog.Ingesta
+﻿namespace FarmaLog.Ingesta.Publishing.Contracts
 {
     internal sealed record LineaDeMensaje(
         string Sku,

@@ -1,4 +1,4 @@
-﻿namespace FarmaLog.Ingesta
+﻿namespace FarmaLog.Ingesta.Planilla
 {
     internal sealed record PlanillaRow(
         int RowNumber,

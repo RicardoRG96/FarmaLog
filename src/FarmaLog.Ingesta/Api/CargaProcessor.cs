@@ -1,7 +1,11 @@
 ﻿using Azure.Messaging.ServiceBus;
+using FarmaLog.Ingesta.Planilla;
+using FarmaLog.Ingesta.Publishing;
+using FarmaLog.Ingesta.Publishing.Contracts;
+using FarmaLog.Ingesta.Validation;
 using System.Globalization;
 
-namespace FarmaLog.Ingesta
+namespace FarmaLog.Ingesta.Api
 {
     internal sealed class CargaProcessor(PlanillaReader reader, ServiceBusSender sender)
     {
