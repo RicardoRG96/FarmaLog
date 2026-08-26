@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/docs/" />
+  <Folder Name="/docs/architecture/">
+    <File Path="docs/architecture/arquitectura.md" />
+  </Folder>
   <Folder Name="/infra/">
     <File Path="infra/provision.sh" />
     <File Path="infra/teardown.sh" />
