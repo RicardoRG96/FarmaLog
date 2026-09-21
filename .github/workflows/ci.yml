@@ -7,7 +7,8 @@ on:
     branches: [ master, main ]
 
 jobs:
-  build-and-test:
+  pruebas-unitarias:
+    name: Pruebas unitarias
     runs-on: ubuntu-latest
 
     steps:
@@ -24,5 +25,44 @@ jobs:
       - name: Compilar
         run: dotnet build --no-restore --configuration Release
 
-      - name: Ejecutar pruebas
-        run: dotnet test --no-build --configuration Release --verbosity normal
+      - name: Ejecutar pruebas unitarias
+        run: |
+          dotnet test tests/FarmaLog.Nucleo.Domain.Tests --no-build --configuration Release
+          dotnet test tests/FarmaLog.Nucleo.Application.Tests --no-build --configuration Release
+          dotnet test tests/FarmaLog.Ingesta.Tests --no-build --configuration Release
+
+  pruebas-integracion:
+    name: Pruebas de integración (SQL Server)
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Farmalog!2026"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P 'Farmalog!2026' -Q 'SELECT 1' -b -o /dev/null"
+          --health-start-period 20s
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Instalar .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restaurar dependencias
+        run: dotnet restore
+
+      - name: Compilar
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Ejecutar pruebas de integración
+        run: dotnet test tests/FarmaLog.Nucleo.Infrastructure.Tests --no-build --configuration Release
