@@ -360,7 +360,6 @@ MigrationBackup/
 .ionide/
 
 # Fody - auto-generated XML schema
-FodyWeavers.xsd.env.local
-.env.local
+FodyWeavers.xsd
 .env.local
 .secrets-comandos.local
