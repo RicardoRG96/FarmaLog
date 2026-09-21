@@ -21,6 +21,8 @@
     <File Path=".dockerignore" />
     <File Path=".env.local" />
     <File Path="Dockerfile" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/FarmaLog.Ingesta/FarmaLog.Ingesta.csproj" />
