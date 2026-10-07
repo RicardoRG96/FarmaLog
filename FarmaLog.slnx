@@ -5,6 +5,7 @@
   </Folder>
   <Folder Name="/docs/" />
   <Folder Name="/docs/adr/">
+    <File Path="0005-uso-outbox-transaccional.md" />
     <File Path="docs/adr/0001-corte-de-microservicios.md" />
     <File Path="docs/adr/0002-contratos-duplicados-por-servicio.md" />
     <File Path="docs/adr/0003-closedxml-sobre-epplus.md" />

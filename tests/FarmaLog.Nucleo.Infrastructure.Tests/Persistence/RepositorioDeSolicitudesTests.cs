@@ -49,7 +49,7 @@ public class RepositorioDeSolicitudesTests
         Assert.AreEqual(solicitud.CodigoLaboratorio, solicitudRehidratada.CodigoLaboratorio);
         Assert.AreEqual(solicitud.NumeroDelivery, solicitudRehidratada.NumeroDelivery);
         Assert.AreEqual(solicitud.FechaEntregaSolicitada, solicitudRehidratada.FechaEntregaSolicitada);
-        Assert.AreEqual(solicitud.Lineas.Count, solicitudRehidratada.Lineas.Count);
+        Assert.HasCount(solicitud.Lineas.Count, solicitudRehidratada.Lineas);
     }
 
     [TestMethod]
