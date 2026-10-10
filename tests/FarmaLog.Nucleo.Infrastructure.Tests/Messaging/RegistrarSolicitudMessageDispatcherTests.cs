@@ -15,8 +15,9 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
             RelojFijo reloj = new(new DateOnly(2026, 8, 1));
             GeneradorDeIdentificadoresFijo generador = new(
                 Guid.Parse("11111111-1111-1111-1111-111111111111"));
+            DomainEventDispatcherSpy eventDispatcher = new();
 
-            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador);
+            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador, eventDispatcher);
 
             RegistrarSolicitudMessageHandler messageHandler = new(applicationHandler);
 
@@ -39,8 +40,9 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
             RelojFijo reloj = new(new DateOnly(2026, 8, 1));
             GeneradorDeIdentificadoresFijo generador = new(
                 Guid.Parse("11111111-1111-1111-1111-111111111111"));
+            DomainEventDispatcherSpy eventDispatcher = new();
 
-            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador);
+            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador, eventDispatcher);
 
             RegistrarSolicitudMessageHandler messageHandler = new(applicationHandler);
 
@@ -63,8 +65,9 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
             RelojFijo reloj = new(new DateOnly(2026, 8, 1));
             GeneradorDeIdentificadoresFijo generador = new(
                 Guid.Parse("11111111-1111-1111-1111-111111111111"));
+            DomainEventDispatcherSpy eventDispatcher = new();
 
-            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador);
+            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador, eventDispatcher);
 
             RegistrarSolicitudMessageHandler messageHandler = new(applicationHandler);
 
@@ -104,8 +107,9 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
             RelojFijo reloj = new(new DateOnly(2026, 8, 1));
             GeneradorDeIdentificadoresFijo generador = new(
                 Guid.Parse("11111111-1111-1111-1111-111111111111"));
+            DomainEventDispatcherSpy eventDispatcher = new();
 
-            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador);
+            RegistrarSolicitudDeIngresoHandler applicationHandler = new(repositorio, reloj, generador, eventDispatcher);
 
             RegistrarSolicitudMessageHandler messageHandler = new(applicationHandler);
 

@@ -1,6 +1,8 @@
 ﻿using FarmaLog.Nucleo.Application.Tests.Doubles;
 using FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso;
+using FarmaLog.Nucleo.Domain.Common;
 using FarmaLog.Nucleo.Domain.Solicitudes;
+using FarmaLog.Nucleo.Domain.Solicitudes.Events;
 
 namespace FarmaLog.Nucleo.Application.Tests.UseCases
 {
@@ -29,7 +31,8 @@ namespace FarmaLog.Nucleo.Application.Tests.UseCases
             RepositorioDeSolicitudesEnMemoria repositorio = new();
             RelojFijo reloj = new(new DateOnly(2026, 8, 1));
             GeneradorDeIdentificadoresFijo generador = new(Guid.Parse("11111111-1111-1111-1111-111111111111"));
-            RegistrarSolicitudDeIngresoHandler handler = new(repositorio, reloj, generador);
+            DomainEventDispatcherSpy eventDispatcher = new();
+            RegistrarSolicitudDeIngresoHandler handler = new(repositorio, reloj, generador, eventDispatcher);
 
             //Act
             await handler.Handle(CrearComandoValido());
@@ -37,6 +40,27 @@ namespace FarmaLog.Nucleo.Application.Tests.UseCases
             //Assert
             Assert.HasCount(1, repositorio.Guardadas);
             Assert.AreEqual(EstadoSolicitud.Recibida, repositorio.Guardadas[0].Estado);
+        }
+
+        [TestMethod]
+        public async Task RegistrarSolicitudDeIngreso_Should_DeliverDomainEventsToDispatcher_When_CommandIsValid()
+        {
+            //Arrange
+            RepositorioDeSolicitudesEnMemoria repositorio = new();
+            RelojFijo reloj = new(new DateOnly(2026, 8, 1));
+            Guid id = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            GeneradorDeIdentificadoresFijo generador = new(id);
+            DomainEventDispatcherSpy eventDispatcher = new();
+            RegistrarSolicitudDeIngresoHandler handler = new(repositorio, reloj, generador, eventDispatcher);
+
+            //Act
+            await handler.Handle(CrearComandoValido());
+
+            //Assert
+            IDomainEvent domainEvent = Assert.ContainsSingle(eventDispatcher.Dispatched);
+            SolicitudDeIngresoRegistrada registrada =
+                Assert.IsInstanceOfType<SolicitudDeIngresoRegistrada>(domainEvent);
+            Assert.AreEqual(id, registrada.SolicitudId);
         }
     }
 }

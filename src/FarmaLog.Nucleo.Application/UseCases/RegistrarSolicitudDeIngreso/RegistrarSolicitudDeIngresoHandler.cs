@@ -8,15 +8,18 @@ namespace FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso
         private readonly IRepositorioDeSolicitudes _repositorio;
         private readonly IReloj _reloj;
         private readonly IGeneradorDeIdentificadores _generador;
+        private readonly IDomainEventDispatcher _eventDispatcher;
 
         public RegistrarSolicitudDeIngresoHandler(
             IRepositorioDeSolicitudes repositorio, 
             IReloj reloj, 
-            IGeneradorDeIdentificadores generador)
+            IGeneradorDeIdentificadores generador,
+            IDomainEventDispatcher eventDispatcher)
         {
             _repositorio = repositorio;
             _reloj = reloj;
             _generador = generador;
+            _eventDispatcher = eventDispatcher;
         }
 
         public async Task Handle(RegistrarSolicitudDeIngresoCommand command)
@@ -46,6 +49,8 @@ namespace FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso
                 command.Urgencia);
 
             await _repositorio.Guardar(solicitud);
+
+            await _eventDispatcher.DispatchAsync(solicitud.DomainEvents);
         }
 
         private static DocumentoVentaCenabast? MapearDocumentoCenabast(string? valor) =>
