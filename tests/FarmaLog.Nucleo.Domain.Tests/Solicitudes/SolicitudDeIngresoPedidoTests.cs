@@ -699,5 +699,15 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
                 Assert.IsInstanceOfType<SolicitudDeIngresoRegistrada>(domainEvent);
             Assert.AreEqual(solicitud.Id, registrada.SolicitudId);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_Should_HaveEmptyDomainEvents_When_IsRehidratada()
+        {
+            //Arrange + Act
+            SolicitudDeIngresoPedido solicitud = RehidratarSolicitud(estado: EstadoSolicitud.Aceptada);
+
+            //Assert
+            Assert.HasCount(0, solicitud.DomainEvents);
+        }
     }
 }
