@@ -14,7 +14,7 @@ namespace FarmaLog.Nucleo.Application.Tests.Doubles
             _repositorio = repositorio;
         }
 
-        public IReadOnlyCollection<IDomainEvent> Dispatched => _dispatched;
+        public IReadOnlyList<IDomainEvent> Dispatched => _dispatched;
         public int? SavedCountAtDispatch { get; private set; }
 
         public Task DispatchAsync(IReadOnlyCollection<IDomainEvent> domainEvents, CancellationToken ct = default)

@@ -4,7 +4,7 @@ using FarmaLog.Nucleo.Domain.Common;
 using FarmaLog.Nucleo.Domain.Solicitudes;
 using FarmaLog.Nucleo.Domain.Solicitudes.Events;
 
-namespace FarmaLog.Nucleo.Application.Tests.UseCases
+namespace FarmaLog.Nucleo.Application.Tests.UseCases.RegistrarSolicitudDeIngreso
 {
     [TestClass]
     public class RegistrarSolicitudDeIngresoTests
