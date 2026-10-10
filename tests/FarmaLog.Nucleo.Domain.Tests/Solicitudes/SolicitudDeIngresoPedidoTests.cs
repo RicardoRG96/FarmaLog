@@ -1,4 +1,6 @@
-﻿using FarmaLog.Nucleo.Domain.Solicitudes;
+﻿using FarmaLog.Nucleo.Domain.Common;
+using FarmaLog.Nucleo.Domain.Solicitudes;
+using FarmaLog.Nucleo.Domain.Solicitudes.Events;
 using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
 using Microsoft.Extensions.Time.Testing;
 
@@ -683,6 +685,19 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
 
             // Assert
             Assert.AreEqual("El SKU no existe en el catálogo", solicitud.MotivosDeRechazo.Single());
+        }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_Should_RaiseSolicitudDeIngresoRegistrada_When_Created()
+        {
+            //Arrange + Act
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud();
+
+            //Assert
+            IDomainEvent domainEvent = Assert.ContainsSingle(solicitud.DomainEvents);
+            SolicitudDeIngresoRegistrada registrada =
+                Assert.IsInstanceOfType<SolicitudDeIngresoRegistrada>(domainEvent);
+            Assert.AreEqual(solicitud.Id, registrada.SolicitudId);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
+﻿using FarmaLog.Nucleo.Domain.Common;
+using FarmaLog.Nucleo.Domain.Solicitudes.Events;
+using FarmaLog.Nucleo.Domain.Solicitudes.Exceptions;
 
 namespace FarmaLog.Nucleo.Domain.Solicitudes
 {
@@ -24,8 +26,10 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
         public EstadoSolicitud Estado { get; private set; }
         private readonly List<string> _motivosDeRechazo = [];
         public IReadOnlyCollection<string> MotivosDeRechazo => _motivosDeRechazo.AsReadOnly();
+        private readonly List<IDomainEvent> _domainEvents = [];
+        public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
 
-        #pragma warning disable CS8618 // EF Core materializa los campos por reflexión
+#pragma warning disable CS8618 // EF Core materializa los campos por reflexión
         private SolicitudDeIngresoPedido() { }
         #pragma warning restore CS8618
 
@@ -114,22 +118,26 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
 
             DateOnly fechaEntregaFinal = fechaEntrega ?? hoy;
 
-            return new SolicitudDeIngresoPedido(
+            SolicitudDeIngresoPedido solicitud = new(
                 id,
                 codigoLaboratorio,
                 cuentaCliente,
                 direccionDespacho,
                 tipoOrdenVenta,
-                esCenabast, 
-                documentoVentaCenabast, 
-                lineas, 
-                observacion, 
+                esCenabast,
+                documentoVentaCenabast,
+                lineas,
+                observacion,
                 fechaEntregaFinal,
                 numeroDelivery,
                 ordenCompra,
                 urgencia,
                 EstadoSolicitud.Recibida,
                 []);
+
+            solicitud._domainEvents.Add(new SolicitudDeIngresoRegistrada(id));
+
+            return solicitud;
         }
 
         private static void VerificarPertenenciaAlLaboratorio(
