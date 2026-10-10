@@ -62,5 +62,23 @@ namespace FarmaLog.Nucleo.Application.Tests.UseCases
                 Assert.IsInstanceOfType<SolicitudDeIngresoRegistrada>(domainEvent);
             Assert.AreEqual(id, registrada.SolicitudId);
         }
+
+        [TestMethod]
+        public async Task RegistrarSolicitudDeIngreso_Should_DispatchEventsBeforeSave_When_CommandIsValid()
+        {
+            //Arrange
+            RepositorioDeSolicitudesEnMemoria repositorio = new();
+            RelojFijo reloj = new(new DateOnly(2026, 8, 1));
+            Guid id = Guid.Parse("11111111-1111-1111-1111-111111111111");
+            GeneradorDeIdentificadoresFijo generador = new(id);
+            DomainEventDispatcherSpy eventDispatcher = new(repositorio);
+            RegistrarSolicitudDeIngresoHandler handler = new(repositorio, reloj, generador, eventDispatcher);
+
+            //Act
+            await handler.Handle(CrearComandoValido());
+
+            //Assert
+            Assert.AreEqual(0, eventDispatcher.SavedCountAtDispatch);
+        }
     }
 }

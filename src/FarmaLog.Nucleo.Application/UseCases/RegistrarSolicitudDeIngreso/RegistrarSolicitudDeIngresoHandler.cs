@@ -48,9 +48,9 @@ namespace FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso
                 command.OrdenCompra,
                 command.Urgencia);
 
-            await _repositorio.Guardar(solicitud);
-
             await _eventDispatcher.DispatchAsync(solicitud.DomainEvents);
+
+            await _repositorio.Guardar(solicitud);
         }
 
         private static DocumentoVentaCenabast? MapearDocumentoCenabast(string? valor) =>
