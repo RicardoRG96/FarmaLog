@@ -135,7 +135,21 @@ namespace FarmaLog.Nucleo.Domain.Solicitudes
                 EstadoSolicitud.Recibida,
                 []);
 
-            solicitud._domainEvents.Add(new SolicitudDeIngresoRegistrada(id));
+            solicitud._domainEvents.Add(
+                new SolicitudDeIngresoRegistrada(
+                    SolicitudId: solicitud.Id,
+                    CodigoLaboratorio: solicitud.CodigoLaboratorio,
+                    CuentaCliente: solicitud.CuentaCliente,
+                    DireccionDespacho: solicitud.DireccionDespacho,
+                    TipoOrdenVenta: solicitud.TipoOrdenVenta,
+                    EsCenabast: solicitud.EsCenabast,
+                    DocumentoVentaCenabast: solicitud.DocumentoVentaCenabast,
+                    Lineas: solicitud.Lineas.ToArray(),
+                    Observacion: solicitud.Observacion,
+                    FechaEntregaSolicitada: solicitud.FechaEntregaSolicitada,
+                    NumeroDelivery: solicitud.NumeroDelivery,
+                    OrdenCompra: solicitud.OrdenCompra,
+                    Urgencia: solicitud.Urgencia));
 
             return solicitud;
         }
