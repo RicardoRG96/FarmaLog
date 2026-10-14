@@ -48,5 +48,18 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Events
             Assert.AreSame(evento, receivedFirst);
             Assert.AreSame(evento, receivedSecond);
         }
+
+        [TestMethod]
+        public async Task DomainEventDispatcher_ShouldNot_Throw_When_AnEventHasNotHandlersRegistered()
+        {
+            //Arrange
+            ServiceCollection services = new();
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
+            DomainEventDispatcher dispatcher = new(serviceProvider);
+            EventoDePrueba evento = new();
+
+            //Act
+            await dispatcher.DispatchAsync([evento], CancellationToken.None);
+        }
     }
 }
