@@ -709,5 +709,19 @@ namespace FarmaLog.Nucleo.Domain.Tests.Solicitudes
             //Assert
             Assert.HasCount(0, solicitud.DomainEvents);
         }
+
+        [TestMethod]
+        public void SolicitudDeIngresoPedido_Should_RaiseEventWithResolvedFecha_When_FechaEntregaNull()
+        {
+            //Arrange + Act
+            DateOnly hoy = new(2026, 10, 14);
+            SolicitudDeIngresoPedido solicitud = CrearSolicitud(fechaEntrega: null, hoy: hoy);
+
+            //Assert
+            IDomainEvent domainEvent = Assert.ContainsSingle(solicitud.DomainEvents);
+            SolicitudDeIngresoRegistrada registrada =
+                Assert.IsInstanceOfType<SolicitudDeIngresoRegistrada>(domainEvent);
+            Assert.AreEqual(hoy, registrada.FechaEntregaSolicitada);
+        }
     }
 }
