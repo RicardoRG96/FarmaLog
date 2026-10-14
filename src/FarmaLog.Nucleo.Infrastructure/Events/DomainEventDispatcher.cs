@@ -25,7 +25,12 @@ namespace FarmaLog.Nucleo.Infrastructure.Events
 
                 foreach (object? handler in _serviceProvider.GetServices(handlerType))
                 {
-                    await (Task)handleAsync.Invoke(handler, [domainEvent, ct])!;
+                    await (Task)handleAsync.Invoke(
+                        handler,
+                        BindingFlags.DoNotWrapExceptions,
+                        binder: null,
+                        parameters: [domainEvent, ct],
+                        culture: null)!;
                 }
             }
         }

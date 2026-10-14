@@ -50,7 +50,7 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Events
         }
 
         [TestMethod]
-        public async Task DomainEventDispatcher_ShouldNot_Throw_When_AnEventHasNotHandlersRegistered()
+        public async Task DomainEventDispatcher_ShouldNot_Throw_When_NoHandlerIsRegistered()
         {
             //Arrange
             ServiceCollection services = new();
@@ -60,6 +60,22 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Events
 
             //Act
             await dispatcher.DispatchAsync([evento], CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task DomainEventDispatcher_Should_PropagateHandlerExceptionUnwrapped_When_HandlerThrows()
+        {
+            //Arrange
+            ThrowingDomainEventHandler throwingHandler = new();
+            ServiceCollection services = new();
+            services.AddSingleton<IDomainEventHandler<EventoDePrueba>>(throwingHandler);
+            using ServiceProvider serviceProvider = services.BuildServiceProvider();
+            DomainEventDispatcher dispatcher = new(serviceProvider);
+            EventoDePrueba evento = new();
+
+            //Act + Assert
+            await Assert.ThrowsExactlyAsync<DomainExceptionDePrueba>(
+                () => dispatcher.DispatchAsync([evento], CancellationToken.None));
         }
     }
 }
