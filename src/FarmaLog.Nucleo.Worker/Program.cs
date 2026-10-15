@@ -1,7 +1,11 @@
 using Azure.Messaging.ServiceBus;
+using FarmaLog.Nucleo.Application.Common;
 using FarmaLog.Nucleo.Application.Ports;
 using FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso;
+using FarmaLog.Nucleo.Application.UseCases.SolicitarReplicacionEnD365;
+using FarmaLog.Nucleo.Domain.Solicitudes.Events;
 using FarmaLog.Nucleo.Infrastructure.Clock;
+using FarmaLog.Nucleo.Infrastructure.Events;
 using FarmaLog.Nucleo.Infrastructure.Identity;
 using FarmaLog.Nucleo.Infrastructure.Messaging;
 using FarmaLog.Nucleo.Infrastructure.Persistence;
@@ -21,6 +25,9 @@ builder.Services.AddScoped<IRepositorioDeSolicitudes, RepositorioDeSolicitudes>(
 builder.Services.AddScoped<RegistrarSolicitudDeIngresoHandler>();
 builder.Services.AddScoped<RegistrarSolicitudMessageHandler>();
 builder.Services.AddScoped<RegistrarSolicitudMessageDispatcher>();
+builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+builder.Services.AddScoped<IDomainEventHandler<SolicitudDeIngresoRegistrada>, SolicitarReplicacionEnD365Handler>();
+builder.Services.AddScoped<IOutbox, EfOutbox>();
 
 builder.Services.AddSingleton(_ =>
     new ServiceBusClient(builder.Configuration.GetConnectionString("ServiceBus")));

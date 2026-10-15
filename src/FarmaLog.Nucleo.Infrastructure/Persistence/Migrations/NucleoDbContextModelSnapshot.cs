@@ -89,6 +89,36 @@ namespace FarmaLog.Nucleo.Infrastructure.Persistence.Migrations
                     b.ToTable("Solicitudes", (string)null);
                 });
 
+            modelBuilder.Entity("FarmaLog.Nucleo.Infrastructure.Persistence.OutboxEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Destination")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Outbox", (string)null);
+                });
+
             modelBuilder.Entity("FarmaLog.Nucleo.Domain.Solicitudes.SolicitudDeIngresoPedido", b =>
                 {
                     b.OwnsMany("FarmaLog.Nucleo.Domain.Solicitudes.LineaSolicitud", "Lineas", b1 =>

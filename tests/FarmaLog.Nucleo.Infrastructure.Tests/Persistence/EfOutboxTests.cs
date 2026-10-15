@@ -45,6 +45,7 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
             //Assert
             await using NucleoDbContext readingContext = new(Options());
             OutboxEntry entry = readingContext.Set<OutboxEntry>().Single();
+
             Assert.AreEqual("cola-de-prueba", entry.Destination);
             Assert.AreEqual("mensaje-1", entry.MessageId);
             Assert.Contains("hola", entry.Payload);
