@@ -22,7 +22,7 @@ namespace FarmaLog.Nucleo.Infrastructure.Persistence
             }
             catch (DbUpdateException exception) when (EsDeliveryDuplicado(exception))
             {
-                context.Entry(solicitud).State = EntityState.Detached;
+                context.ChangeTracker.Clear();
                 return ResultadoGuardado.YaExistia;
             }
         }

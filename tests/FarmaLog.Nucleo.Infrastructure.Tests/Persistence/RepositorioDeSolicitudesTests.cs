@@ -74,4 +74,27 @@ public class RepositorioDeSolicitudesTests
         Assert.AreEqual(ResultadoGuardado.Guardada, primerResultado);
         Assert.AreEqual(ResultadoGuardado.YaExistia, segundoResultado);
     }
+
+    [TestMethod]
+    public async Task RepositorioDeSolicitudes_Should_LeaveNoTrackedEntries_When_SolicitudIsDuplicated()
+    {
+        //Arrange
+        SolicitudDeIngresoPedido primeraSolicitud = SolicitudDeIngresoPedidoTests.CrearSolicitud();
+        SolicitudDeIngresoPedido segundaSolicitud = SolicitudDeIngresoPedidoTests.CrearSolicitud(
+            id: Guid.Parse("22222222-2222-2222-2222-222222222222"));
+        OutboxMessage outboxMessage = new(
+            Destination: "cola-de-prueba", MessageId: primeraSolicitud.Id.ToString(), Payload: "test");
+
+        await using NucleoDbContext primerContexto = new(Options());
+        await using NucleoDbContext segundoContexto = new(Options());
+        EfOutbox outbox = new(segundoContexto, TimeProvider.System);
+
+        //Act
+        await new RepositorioDeSolicitudes(primerContexto).Guardar(primeraSolicitud, CancellationToken.None);
+        outbox.Add(outboxMessage);
+        await new RepositorioDeSolicitudes(segundoContexto).Guardar(segundaSolicitud, CancellationToken.None);
+
+        //Assert
+        Assert.IsEmpty(segundoContexto.ChangeTracker.Entries());
+    }
 }
