@@ -22,7 +22,30 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
         private const string ConnectionString =
         "Server=localhost,1433;Database=FarmaLogTests;User Id=sa;Password=Farmalog!2026;TrustServerCertificate=True";
 
-        private static RegistrarSolicitudDeIngresoCommand CrearComandoValido() =>
+        private static ServiceProvider CrearProveedor()
+        {
+            FakeTimeProvider time = new(new DateTimeOffset(2026, 10, 16, 15, 0, 0, TimeSpan.Zero));
+
+            ServiceCollection services = new();
+
+            services.AddDbContext<NucleoDbContext>(options =>
+                options.UseSqlServer(ConnectionString));
+            services.AddSingleton<TimeProvider>(time);
+            services.AddSingleton<IReloj, RelojDelSistema>();
+            services.AddSingleton<IGeneradorDeIdentificadores, GeneradorDeIdentificadores>();
+            services.AddScoped<IRepositorioDeSolicitudes, RepositorioDeSolicitudes>();
+            services.AddScoped<RegistrarSolicitudDeIngresoHandler>();
+            services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+            services.AddScoped<IDomainEventHandler<SolicitudDeIngresoRegistrada>, SolicitarReplicacionEnD365Handler>();
+            services.AddScoped<IOutbox, EfOutbox>();
+
+            ServiceProvider serviceProvider = services.BuildServiceProvider(
+                new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
+
+            return serviceProvider;
+        }
+
+        private static RegistrarSolicitudDeIngresoCommand CreateValidCommand() =>
             new(
                 CodigoLaboratorio: "53",
                 CuentaCliente: "53-0778903451",
@@ -54,23 +77,7 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
         public async Task RegistrarSolicitudDeIngresoHandler_Should_PersistASolicitudAndOutboxRow_When_CommandIsValid()
         {
             //Arrange
-            FakeTimeProvider time = new(new DateTimeOffset(2026, 10, 16, 15, 0, 0, TimeSpan.Zero));
-
-            ServiceCollection services = new();
-
-            services.AddDbContext<NucleoDbContext>(options =>
-                options.UseSqlServer(ConnectionString));
-            services.AddSingleton<TimeProvider>(time);
-            services.AddSingleton<IReloj, RelojDelSistema>();
-            services.AddSingleton<IGeneradorDeIdentificadores, GeneradorDeIdentificadores>();
-            services.AddScoped<IRepositorioDeSolicitudes, RepositorioDeSolicitudes>();
-            services.AddScoped<RegistrarSolicitudDeIngresoHandler>();
-            services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-            services.AddScoped<IDomainEventHandler<SolicitudDeIngresoRegistrada>, SolicitarReplicacionEnD365Handler>();
-            services.AddScoped<IOutbox, EfOutbox>();
-
-            await using ServiceProvider serviceProvider = services.BuildServiceProvider(
-                new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
+            using ServiceProvider serviceProvider = CrearProveedor();
 
             await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
 
@@ -78,7 +85,7 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
                 scope.ServiceProvider.GetRequiredService<RegistrarSolicitudDeIngresoHandler>();
 
             //Act
-            await handler.Handle(CrearComandoValido());
+            await handler.Handle(CreateValidCommand());
 
             //Assert
             await using NucleoDbContext readingContext = new(Options());
@@ -86,6 +93,33 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
             SolicitudDeIngresoPedido solicitud = readingContext.Set<SolicitudDeIngresoPedido>().Single();
 
             Assert.AreEqual(solicitud.Id.ToString(), entry.MessageId);
+        }
+
+        [TestMethod]
+        public async Task RegistrarSolicitudDeIngresoHandler_Should_KeepASingleOutboxEntry_When_DeliveryIsDuplicated()
+        {
+            //Arrange
+            using ServiceProvider serviceProvider = CrearProveedor();
+
+            //Act
+            await using (AsyncServiceScope firstScope = serviceProvider.CreateAsyncScope())
+            {
+                await firstScope.ServiceProvider
+                    .GetRequiredService<RegistrarSolicitudDeIngresoHandler>()
+                    .Handle(CreateValidCommand());
+            }
+
+            await using (AsyncServiceScope secondScope = serviceProvider.CreateAsyncScope())
+            {
+                await secondScope.ServiceProvider
+                    .GetRequiredService<RegistrarSolicitudDeIngresoHandler>()
+                    .Handle(CreateValidCommand());
+            }
+
+            //Assert
+            await using NucleoDbContext readingContext = new(Options());
+            Assert.HasCount(1, readingContext.Set<SolicitudDeIngresoPedido>());
+            Assert.HasCount(1, readingContext.Set<OutboxEntry>());
         }
     }
 }
