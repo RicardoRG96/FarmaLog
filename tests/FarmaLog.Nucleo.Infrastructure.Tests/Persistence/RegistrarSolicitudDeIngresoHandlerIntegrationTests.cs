@@ -1,14 +1,7 @@
-﻿using FarmaLog.Nucleo.Application.Common;
-using FarmaLog.Nucleo.Application.Ports;
-using FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso;
-using FarmaLog.Nucleo.Application.UseCases.SolicitarReplicacionEnD365;
+﻿using FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso;
 using FarmaLog.Nucleo.Domain.Solicitudes;
-using FarmaLog.Nucleo.Domain.Solicitudes.Events;
-using FarmaLog.Nucleo.Infrastructure.Clock;
-using FarmaLog.Nucleo.Infrastructure.Events;
-using FarmaLog.Nucleo.Infrastructure.Identity;
+using FarmaLog.Nucleo.Infrastructure.DependencyInjection;
 using FarmaLog.Nucleo.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using static FarmaLog.Nucleo.Infrastructure.Tests.Persistence.SqlServerTestDatabase;
@@ -25,21 +18,11 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
 
             ServiceCollection services = new();
 
-            services.AddDbContext<NucleoDbContext>(options =>
-                options.UseSqlServer(ConnectionString));
             services.AddSingleton<TimeProvider>(time);
-            services.AddSingleton<IReloj, RelojDelSistema>();
-            services.AddSingleton<IGeneradorDeIdentificadores, GeneradorDeIdentificadores>();
-            services.AddScoped<IRepositorioDeSolicitudes, RepositorioDeSolicitudes>();
-            services.AddScoped<RegistrarSolicitudDeIngresoHandler>();
-            services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-            services.AddScoped<IDomainEventHandler<SolicitudDeIngresoRegistrada>, SolicitarReplicacionEnD365Handler>();
-            services.AddScoped<IOutbox, EfOutbox>();
+            services.AddNucleo(ConnectionString);
 
-            ServiceProvider serviceProvider = services.BuildServiceProvider(
+            return services.BuildServiceProvider(
                 new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
-
-            return serviceProvider;
         }
 
         private static RegistrarSolicitudDeIngresoCommand CreateValidCommand() =>
