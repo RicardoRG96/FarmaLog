@@ -36,6 +36,7 @@ namespace FarmaLog.Nucleo.Infrastructure.DependencyInjection
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             services.AddScoped<IDomainEventHandler<SolicitudDeIngresoRegistrada>, SolicitarReplicacionEnD365Handler>();
             services.AddScoped<IOutbox, EfOutbox>();
+            services.AddScoped<OutboxPublisher>();
 
             return services;
         }

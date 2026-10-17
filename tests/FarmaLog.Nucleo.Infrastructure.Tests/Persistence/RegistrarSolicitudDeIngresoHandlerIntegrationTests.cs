@@ -1,7 +1,9 @@
 ﻿using FarmaLog.Nucleo.Application.UseCases.RegistrarSolicitudDeIngreso;
 using FarmaLog.Nucleo.Domain.Solicitudes;
 using FarmaLog.Nucleo.Infrastructure.DependencyInjection;
+using FarmaLog.Nucleo.Infrastructure.Messaging;
 using FarmaLog.Nucleo.Infrastructure.Persistence;
+using FarmaLog.Nucleo.Infrastructure.Tests.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using static FarmaLog.Nucleo.Infrastructure.Tests.Persistence.SqlServerTestDatabase;
@@ -19,6 +21,8 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
             ServiceCollection services = new();
 
             services.AddSingleton<TimeProvider>(time);
+            services.AddLogging();
+            services.AddSingleton<IOutboxMessageSender>(new OutboxMessageSenderSpy());
             services.AddNucleo(ConnectionString);
 
             return services.BuildServiceProvider(
