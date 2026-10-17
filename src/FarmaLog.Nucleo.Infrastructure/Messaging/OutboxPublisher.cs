@@ -27,9 +27,11 @@ namespace FarmaLog.Nucleo.Infrastructure.Messaging
                     entry.MarkAsProcessed(timeProvider.GetUtcNow());
                     await context.SaveChangesAsync(cancellationToken);
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
                 {
-                    logger.LogError(ex.Message);
+                    logger.LogError(ex,
+                       "No se pudo publicar la fila {MessageId} hacia {Destination}. Queda pendiente.",
+                       entry.MessageId, entry.Destination);
                 }
 
             }

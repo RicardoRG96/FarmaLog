@@ -161,5 +161,31 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
             Assert.IsNull(failedEntry.ProcessedAt);
             Assert.AreEqual(now, successEntry.ProcessedAt);
         }
+
+        [TestMethod]
+        public async Task OutboxPublisher_Should_PropagateCancellation_When_CancellationIsRequestedDuringSend()
+        {
+            //Arrange
+            OutboxEntry entry = new(
+                Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                "cola-de-prueba",
+                "message-id-prueba",
+                "payload-de-prueba",
+                new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero));
+
+            await InsertEntryAsync(entry);
+
+            DateTimeOffset now = new(2026, 10, 17, 10, 0, 0, TimeSpan.Zero);
+            FakeTimeProvider clock = new(now);
+
+            await using NucleoDbContext secondContext = new(Options());
+            using CancellationTokenSource cts = new();
+            OutboxPublisher publisher = new(
+                secondContext, new CancelingOutboxMessageSender(cts), clock, NullLogger<OutboxPublisher>.Instance);
+
+            //Act + Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => publisher.PublishPendingAsync(cts.Token));
+        }
     }
 }
