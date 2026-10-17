@@ -7,11 +7,11 @@ using FarmaLog.Nucleo.Domain.Solicitudes.Events;
 using FarmaLog.Nucleo.Infrastructure.Clock;
 using FarmaLog.Nucleo.Infrastructure.Events;
 using FarmaLog.Nucleo.Infrastructure.Identity;
-using FarmaLog.Nucleo.Infrastructure.Messaging;
 using FarmaLog.Nucleo.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
+using static FarmaLog.Nucleo.Infrastructure.Tests.Persistence.SqlServerTestDatabase;
 
 namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
 {
@@ -19,9 +19,6 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
     [DoNotParallelize]
     public class RegistrarSolicitudDeIngresoHandlerIntegrationTests
     {
-        private const string ConnectionString =
-        "Server=localhost,1433;Database=FarmaLogTests;User Id=sa;Password=Farmalog!2026;TrustServerCertificate=True";
-
         private static ServiceProvider CrearProveedor()
         {
             FakeTimeProvider time = new(new DateTimeOffset(2026, 10, 16, 15, 0, 0, TimeSpan.Zero));
@@ -60,18 +57,8 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
                 Urgencia: false,
                 Lineas: new[] { new LineaDeSolicitudCommand("SKU-1", 10, "DISPONIBLE", null) });
 
-        private static DbContextOptions<NucleoDbContext> Options() =>
-            new DbContextOptionsBuilder<NucleoDbContext>()
-                .UseSqlServer(ConnectionString)
-                .Options;
-
         [TestInitialize]
-        public void Inicializar()
-        {
-            using NucleoDbContext contexto = new(Options());
-            contexto.Database.EnsureDeleted();
-            contexto.Database.Migrate();
-        }
+        public void Inicializar() => Reset();
 
         [TestMethod]
         public async Task RegistrarSolicitudDeIngresoHandler_Should_PersistASolicitudAndOutboxRow_When_CommandIsValid()

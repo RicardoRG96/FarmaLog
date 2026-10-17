@@ -2,7 +2,7 @@
 using FarmaLog.Nucleo.Domain.Solicitudes;
 using FarmaLog.Nucleo.Domain.Tests.Solicitudes;
 using FarmaLog.Nucleo.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using static FarmaLog.Nucleo.Infrastructure.Tests.Persistence.SqlServerTestDatabase;
 
 namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence;
 
@@ -10,21 +10,8 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence;
 [DoNotParallelize]
 public class RepositorioDeSolicitudesTests
 {
-    private const string ConnectionString =
-        "Server=localhost,1433;Database=FarmaLogTests;User Id=sa;Password=Farmalog!2026;TrustServerCertificate=True";
-
-    private static DbContextOptions<NucleoDbContext> Options() =>
-        new DbContextOptionsBuilder<NucleoDbContext>()
-            .UseSqlServer(ConnectionString)
-            .Options;
-
     [TestInitialize]
-    public void Inicializar()
-    {
-        using NucleoDbContext contexto = new(Options());
-        contexto.Database.EnsureDeleted();
-        contexto.Database.Migrate();
-    }
+    public void Inicializar() => Reset();
 
     [TestMethod]
     public async Task RepositorioDeSolicitudes_ShouldRehydrateAnIdenticalSolicitud_When_ASolicitudIsSaved()

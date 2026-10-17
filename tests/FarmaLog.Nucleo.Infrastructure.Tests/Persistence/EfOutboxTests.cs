@@ -1,7 +1,7 @@
 ﻿using FarmaLog.Nucleo.Application.Ports;
 using FarmaLog.Nucleo.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using static FarmaLog.Nucleo.Infrastructure.Tests.Persistence.SqlServerTestDatabase;
 
 namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
 {
@@ -9,21 +9,8 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Persistence
     [DoNotParallelize]
     public class EfOutboxTests
     {
-        private const string ConnectionString =
-        "Server=localhost,1433;Database=FarmaLogTests;User Id=sa;Password=Farmalog!2026;TrustServerCertificate=True";
-
-        private static DbContextOptions<NucleoDbContext> Options() =>
-            new DbContextOptionsBuilder<NucleoDbContext>()
-                .UseSqlServer(ConnectionString)
-                .Options;
-
         [TestInitialize]
-        public void Inicializar()
-        {
-            using NucleoDbContext contexto = new(Options());
-            contexto.Database.EnsureDeleted();
-            contexto.Database.Migrate();
-        }
+        public void Inicializar() => Reset();
 
         [TestMethod]
         public async Task EfOutbox_Should_PersistPendingEntry_When_MessageIsAddedAndSaved()
