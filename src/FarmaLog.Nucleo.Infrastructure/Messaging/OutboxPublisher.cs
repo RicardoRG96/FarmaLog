@@ -10,9 +10,10 @@ namespace FarmaLog.Nucleo.Infrastructure.Messaging
         {
             List<OutboxEntry> pendingEntries = await context
                 .Set<OutboxEntry>()
+                .Where(e => e.ProcessedAt == null)
                 .ToListAsync(cancellationToken);
 
-            foreach (var entry in pendingEntries)
+            foreach (OutboxEntry entry in pendingEntries)
             {
                 await messageSender.SendAsync(
                     entry.Destination, entry.MessageId, entry.Payload, cancellationToken);

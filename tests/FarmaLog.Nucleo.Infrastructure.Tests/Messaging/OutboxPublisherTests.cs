@@ -9,6 +9,13 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
     [DoNotParallelize]
     public class OutboxPublisherTests
     {
+        private static async Task InsertEntryAsync(OutboxEntry entry)
+        {
+            await using NucleoDbContext context = new(Options());
+            context.Add(entry);
+            await context.SaveChangesAsync(CancellationToken.None);
+        }
+
         [TestInitialize]
         public void Inicializar() => Reset();
 
@@ -22,9 +29,7 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
                 "message-id-prueba",
                 "payload-de-prueba",
                 new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero));
-            await using NucleoDbContext firstContext = new(Options());
-            firstContext.Add(entry);
-            await firstContext.SaveChangesAsync(CancellationToken.None);
+            await InsertEntryAsync(entry);
 
             await using NucleoDbContext secondContext = new(Options());
             OutboxMessageSenderSpy spy = new();
@@ -50,9 +55,8 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
                 "message-id-prueba",
                 "payload-de-prueba",
                 new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero));
-            await using NucleoDbContext firstContext = new(Options());
-            firstContext.Add(entry);
-            await firstContext.SaveChangesAsync(CancellationToken.None);
+            await InsertEntryAsync(entry);
+
             DateTimeOffset now = new(2026, 10, 17, 10, 0, 0, TimeSpan.Zero);
             FakeTimeProvider clock = new(now);
 
@@ -65,8 +69,45 @@ namespace FarmaLog.Nucleo.Infrastructure.Tests.Messaging
 
             //Assert
             await using NucleoDbContext thirdContext = new(Options());
-            OutboxEntry saved = thirdContext.Set<OutboxEntry>().First();
+            OutboxEntry saved = thirdContext.Set<OutboxEntry>().Single();
             Assert.AreEqual(now, saved.ProcessedAt);
+        }
+
+        [TestMethod]
+        public async Task OutboxPublisher_Should_SendOnlyPendingEntries_When_SomeEntriesWereAlreadyProcessed()
+        {
+            //Arrange
+            OutboxEntry firstEntry = new(
+                Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                "cola-de-prueba",
+                "message-pendiete",
+                "payload-de-prueba",
+                new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero));
+
+            OutboxEntry secondEntry = new(
+                Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                "cola-de-prueba",
+                "message-procesado",
+                "payload-de-prueba2",
+                new DateTimeOffset(2026, 10, 16, 12, 0, 0, TimeSpan.Zero));
+
+            DateTimeOffset now = new(2026, 10, 17, 10, 0, 0, TimeSpan.Zero);
+            FakeTimeProvider clock = new(now);
+
+            await InsertEntryAsync(firstEntry);
+            secondEntry.MarkAsProcessed(clock.GetUtcNow());
+            await InsertEntryAsync(secondEntry);
+
+            await using NucleoDbContext secondContext = new(Options());
+            OutboxMessageSenderSpy spy = new();
+            OutboxPublisher publisher = new(secondContext, spy, clock);
+
+            //Act
+            await publisher.PublishPendingAsync(CancellationToken.None);
+
+            //Assert
+            SentMessage sent = Assert.ContainsSingle(spy.Sent);
+            Assert.AreEqual("message-pendiete", sent.MessageId);
         }
     }
 }
