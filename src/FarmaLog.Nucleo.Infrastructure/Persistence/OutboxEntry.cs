@@ -18,5 +18,8 @@
             Payload = payload;
             CreatedAt = createdAt;
         }
+
+        public void MarkAsProcessed(DateTimeOffset processedAt) 
+            => ProcessedAt = processedAt;
     }
 }
