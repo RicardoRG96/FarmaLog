@@ -55,7 +55,7 @@ Uso un outbox transaccional (opción B), con estas reglas:
 
 | Opción | Resultado |
 |---|---|
-| Dentro del Worker: publica después del commit y barre las filas pendientes al arrancar y cada cierto tiempo mientras la réplica esté viva | Elegida |
+| | Dentro del Worker: un `BackgroundService` que barre al arrancar y cada 5 segundos mientras la réplica está viva | Elegida |
 | Una segunda regla de KEDA con el escalador de SQL Server | Descartada. Consultaría la base cada 30 segundos todo el día, la base nunca entraría en pausa automática y se consumiría la oferta gratuita de Azure SQL |
 | Un proceso programado aparte (Container Apps Job o Function con timer) | Descartada. Sería otro desplegable leyendo tablas del Núcleo |
 | `minReplicas = 1` | Descartada. Pagaría la réplica todo el mes y perdería el escalado a cero |
@@ -71,17 +71,24 @@ Elegí el Worker porque una fila solo queda pendiente si la publicación falla d
 - Riesgo residual: si la publicación falla y la réplica baja a cero antes de reintentar, la fila espera hasta que llegue el próximo mensaje y el barrido de arranque la publique.
 - Camino de mejora: si el negocio fija un tiempo máximo entre el registro y D365, activo la regla de KEDA sobre SQL.
 - Deudas que acepto:
-  - El repositorio actúa como unidad de trabajo: ante un duplicado limpia todo el contexto, incluida la fila del outbox. Lo reviso cuando aparezca el segundo camino de guardado.
+  - El repositorio actúa como unidad de trabajo: ante un duplicado limpia todo el contexto, incluida la fila del outbox. El segundo camino de guardado apareció en el publicador, que es infraestructura y guarda por su cuenta. Lo reviso cuando un caso de uso de Application necesite guardar, con el consumidor del resultado de la replicación.
   - El payload se guarda como `object` y pierde el tipado. Es el costo de un outbox genérico.
   - El nombre de la cola queda escrito en Application.
   - Nadie limpia las filas ya enviadas. Si el volumen lo pide, lo hará el barrido del Worker.
+  - Cada barrido carga todas las filas pendientes, sin límite de lote. Agrego un `Take` cuando el volumen lo pida.
+  - Una fila que falla siempre se reintenta cada 5 segundos y deja un error en el log cada vez. Agrego un contador de intentos cuando haga falta.
+  - Dos réplicas pueden enviar la misma fila al mismo tiempo. La detección de duplicados de la cola lo filtra dentro de su ventana; la mejora es leer con bloqueos de SQL (`UPDLOCK`, `READPAST`).
 
-## Pendiente
+## Cómo se publica
 
-Falta decidir:
+El publicador es un `BackgroundService` del Worker (`OutboxPublisherWorker`), separado del que procesa los mensajes de entrada. Barre al arrancar y después cada 5 segundos.
 
-- En qué momento exacto se publica después del commit, y si es antes o después de completar el mensaje de entrada.
-- Quién hace el segundo `SaveChanges` para marcar `ProcessedAt`.
-- Qué pasa con la fila y con el mensaje de entrada si el envío falla.
-
-Actualizo este ADR cuando cierre esas decisiones.
+- El callback del mensaje de entrada no publica nada. Una vez hecho el commit, completa el mensaje de entrada aunque el comando todavía no se haya enviado. Si el destino del mensaje de entrada dependiera de la publicación, volvería al problema de la opción A.
+- Un solo camino publica filas. Publicar también dentro del callback no recupera las filas que quedan huérfanas cuando el proceso muere después del commit; eso solo lo hace el barrido. Tener los dos caminos duplicaría la misma lógica.
+- No agregué una señal para despertar al barrido después de cada commit. Ganaría como máximo 5 segundos en un flujo que ya es asíncrono. Si el negocio fija un tiempo máximo exigente, la agrego sin tocar el barrido.
+- Por cada fila, primero envío y después marco `ProcessedAt`. Si el proceso muere entre los dos pasos, la fila se reenvía, y eso lo toleran las dos capas de duplicados. El orden inverso podría marcar como enviado un comando que nunca salió.
+- Guardo una fila a la vez, para que una caída en la mitad del barrido reenvíe como mucho una.
+- El segundo `SaveChanges` lo hace `OutboxPublisher`. Es infraestructura y no necesita un puerto de Application.
+- Si el envío de una fila falla, lo registro en el log, la fila queda pendiente y sigo con las demás. Una cola rota no frena al resto.
+- Si llega una cancelación, por ejemplo el `SIGTERM` que manda Container Apps cuando KEDA baja la réplica, el publicador se detiene en vez de tratarla como un envío fallido. El filtro mira el token y no el tipo de excepción, porque un timeout de red también lanza `OperationCanceledException` y en ese caso corresponde seguir.
+- Cada barrido usa su propio scope y su propio `DbContext`.
