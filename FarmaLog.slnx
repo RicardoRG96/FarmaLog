@@ -3,7 +3,9 @@
   <Folder Name="/.github/workflows/">
     <File Path=".github/workflows/ci.yml" />
   </Folder>
-  <Folder Name="/docs/" />
+  <Folder Name="/docs/">
+    <File Path="docs/glosario.md" />
+  </Folder>
   <Folder Name="/docs/adr/">
     <File Path="docs/adr/0001-corte-de-microservicios.md" />
     <File Path="docs/adr/0002-contratos-duplicados-por-servicio.md" />
