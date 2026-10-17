@@ -1,44 +1,87 @@
-# ADR-0005: Por qué se usa un outbox transaccional
+# ADR-0005: Por qué uso un outbox transaccional
 
 **Estado:** aceptado
 **Ámbito:** consistencia de datos distribuidos
 
 ## Contexto
 
-Existe un conflicto de doble escritura entre SQL y Service Bus en el momento en que el `Núcleo` recibe una solicitud de `Ingesta`, ya que si el proceso del `Worker` muere entre guardar y publicar el comando `ReplicarPedidoEnD365` (en la cola `replicar-pedido-d365` lo consume la Function de replicación de pedidos en D365) la solicitud queda persistida en la base de datos, pero el comando nunca se publica en la cola de Service Bus. En este escenario hipotético, la garantía de `at least once` de Service Bus, no es aplicable, ya que el mensaje nunca llegó a aceptarse, y es a partir de ese momento que Service Bus promete entregarlo al consumidor al menos una vez. Un mensaje que nunca se envió no existe para Service Bus, así que no hay nada que entregar.
+Cuando el Núcleo recibe una solicitud desde Ingesta, tiene que hacer dos escrituras: guardar la solicitud en SQL y publicar el comando `ReplicarPedidoEnD365` en la cola `replicar-pedido-d365`. Ese comando lo consume la Function de replicación. No existe una transacción que abarque SQL y Service Bus.
+
+Si el proceso del servicio Worker muere entre guardar y publicar, la solicitud queda persistida y el comando nunca sale. Esto pasa más seguido de lo que parece: un despliegue de una revisión nueva, KEDA bajando réplicas o una falta de memoria terminan el proceso.
+
+La garantía at least once de Service Bus no cubre este caso. Esa garantía empieza cuando Service Bus acepta el mensaje, y un mensaje que nunca se envió no existe para Service Bus. Los reintentos de EF Core tampoco lo resuelven: `EnableRetryOnFailure` reintenta fallas de conexión mientras el proceso está vivo, pero no ayuda si el proceso muere.
 
 ## Opciones
 
-Opción A: completar al final y reintentar de forma idempotente.
+### Opción A: completar al final y republicar de forma idempotente
 
-Para este caso el orden sería: guardar, publicar y completar el mensaje entrante desde `Ingesta`. Si llega un duplicado, se publica igual y se completa, el comando lleva un `MessageId` determinístico, y la cola `replicar-pedido-d365` tiene activada la detección de duplicados de Service Bus.
+El orden sería guardar, publicar y recién ahí completar el mensaje de entrada. Si el proceso muere antes de completar, el lock vence y Service Bus reentrega el mensaje. Si al reintentar la solicitud ya existe, se publica igual. El comando lleva un `MessageId` determinístico y la cola tiene detección de duplicados.
 
-A Favor: 
+A favor:
 
-- No agrega tablas ni procesos. 
-- Se aprovecha la restricción única de la base de datos (par código laboratorio - número delivery).
+- No agrega tablas ni procesos.
 
-En contra: 
+En contra:
 
-- La consistencia depende del reenvío. Si publicar falla siempre, el mensaje entrante termina en la DLQ después de varios intentos, con la solicitud ya guardada.
+- La consistencia depende de la reentrega del mensaje de entrada.
+- Si publicar falla de forma persistente, el mensaje de entrada termina en la DLQ después de tres intentos, con la solicitud guardada y sin comando.
 
-Opción B: outbox transaccional.
+### Opción B: outbox transaccional
 
-En esta alternativa, se guarda tanto la solicitud como el registro en la tabla outbox con el comando serializado en la misma transacción. Un proceso aparte lee las filas pendientes, las publica y las marca como enviadas.
+En la misma transacción guardo la solicitud y una fila en la tabla `Outbox` con el comando serializado. Un publicador lee las filas pendientes, las envía a su cola y las marca como procesadas.
 
-A favor: 
+A favor:
 
-- Guardar y "quedar pendiente de publicar" es atómico, por lo tanto, asegura que el mensaje se publique al menos una vez, con la solicitud ya persistida.
+- Guardar la solicitud y dejar el comando pendiente es atómico. Si la solicitud quedó guardada, el comando también.
+- Sirve para los demás mensajes que el Núcleo tenga que publicar.
 
-En contra: 
+En contra:
 
-- Agrega una tabla y un dispatcher. 
-- Hay un riesgo propio de este proyecto, que es `KEDA` bajando las réplicas del `Worker` a cero cuando no hay mensajes en la cola, y el nuevo dispatcher vive en ese Worker y por lo tanto, se apaga con él.
+- Agrega una tabla y un publicador.
+- El comando sale solo si el publicador corre. KEDA baja el Worker a cero réplicas cuando la cola de entrada está vacía, y el publicador vive en ese Worker.
 
 ## Decisión
 
-Se decide utilizar outbox transaccional.
+Uso un outbox transaccional (opción B), con estas reglas:
+
+- La solicitud y su fila del outbox se guardan en un solo `SaveChanges`.
+- La fila guarda el comando ya armado y su destino. El publicador no tiene lógica de negocio: lee, envía y marca.
+- El comando lo arma `SolicitarReplicacionEnD365Handler`, que maneja el evento de dominio `SolicitudDeIngresoRegistrada`. El caso de uso despacha los eventos antes de guardar. Los manejadores solo escriben en el mismo `DbContext` y nunca llaman a un servicio externo antes del commit.
+- Una fila está pendiente mientras `ProcessedAt` es nulo. No borro las filas al enviarlas, para conservar el registro de qué se envió y cuándo.
+- El comando sale con `MessageId` igual al Id de la solicitud.
+- `MessageId` no es la clave primaria de la tabla, porque es único por destino y no global. Un segundo manejador del mismo evento escribiría otra fila con el mismo `MessageId` y otro destino. Si `MessageId` fuera la clave primaria, esa fila chocaría y haría fallar el registro de la solicitud. Cada fila tiene su propio `Id`.
+
+### Dónde vive el publicador
+
+| Opción | Resultado |
+|---|---|
+| Dentro del Worker: publica después del commit y barre las filas pendientes al arrancar y cada cierto tiempo mientras la réplica esté viva | Elegida |
+| Una segunda regla de KEDA con el escalador de SQL Server | Descartada. Consultaría la base cada 30 segundos todo el día, la base nunca entraría en pausa automática y se consumiría la oferta gratuita de Azure SQL |
+| Un proceso programado aparte (Container Apps Job o Function con timer) | Descartada. Sería otro desplegable leyendo tablas del Núcleo |
+| `minReplicas = 1` | Descartada. Pagaría la réplica todo el mes y perdería el escalado a cero |
+
+Elegí el Worker porque una fila solo queda pendiente si la publicación falla después del commit, y eso es poco frecuente. Cuando la cola se vacía, la réplica sigue viva cinco minutos antes de bajar a cero, y ese tiempo alcanza para reintentar.
 
 ## Consecuencias
 
-Al utilizar outbox transaccional, el consumidor tiene que ser idempotente, ya que el proceso puede publicar el mismo mensaje varias veces. Se logra añadiendo el ID del agregado como valor a la propiedad `MessageId` y configurando la detección de duplicados en la cola.
+- Un delivery duplicado sigue siendo un no-op. Si el insert choca con el índice único, la transacción se revierte completa y la fila del outbox tampoco queda.
+- El comando puede publicarse más de una vez. Lo cubren dos capas:
+  - En el transporte, la cola `replicar-pedido-d365` tiene detección de duplicados por `MessageId`. Solo filtra dentro de su ventana de 10 minutos, y se puede activar únicamente al crear la cola.
+  - En el consumidor, la Function de replicación tiene que tolerar un comando repetido. Lo reconoce por la clave de negocio (laboratorio y número de delivery), que viaja en el cuerpo del mensaje.
+- Riesgo residual: si la publicación falla y la réplica baja a cero antes de reintentar, la fila espera hasta que llegue el próximo mensaje y el barrido de arranque la publique.
+- Camino de mejora: si el negocio fija un tiempo máximo entre el registro y D365, activo la regla de KEDA sobre SQL.
+- Deudas que acepto:
+  - El repositorio actúa como unidad de trabajo: ante un duplicado limpia todo el contexto, incluida la fila del outbox. Lo reviso cuando aparezca el segundo camino de guardado.
+  - El payload se guarda como `object` y pierde el tipado. Es el costo de un outbox genérico.
+  - El nombre de la cola queda escrito en Application.
+  - Nadie limpia las filas ya enviadas. Si el volumen lo pide, lo hará el barrido del Worker.
+
+## Pendiente
+
+Falta decidir:
+
+- En qué momento exacto se publica después del commit, y si es antes o después de completar el mensaje de entrada.
+- Quién hace el segundo `SaveChanges` para marcar `ProcessedAt`.
+- Qué pasa con la fila y con el mensaje de entrada si el envío falla.
+
+Actualizo este ADR cuando cierre esas decisiones.

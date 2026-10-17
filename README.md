@@ -74,7 +74,7 @@ Portal e Ingesta se comunican por HTTP porque hay una persona esperando la respu
 
 ## Decisiones de diseño
 
-Documenté las cuatro decisiones más importantes como ADR, incluyendo las alternativas que descarté:
+Documenté las cinco decisiones más importantes como ADR, incluyendo las alternativas que descarté:
 
 | | |
 |---|---|
@@ -82,6 +82,7 @@ Documenté las cuatro decisiones más importantes como ADR, incluyendo las alter
 | [ADR-0002](docs/adr/0002-contratos-duplicados-por-servicio.md) | Por qué dupliqué los contratos en vez de usar un proyecto compartido, y lo que eso ya costó |
 | [ADR-0003](docs/adr/0003-closedxml-sobre-epplus.md) | ClosedXML en lugar de EPPlus, por un tema de licencia |
 | [ADR-0004](docs/adr/0004-imagen-base-debian.md) | Imagen base Debian, porque un requisito del negocio lo exigía |
+| [ADR-0005](docs/adr/0005-uso-outbox-transaccional.md) | Porque decidí utilizar el patrón Outbox transaccional |
 
 Hay otras tres que se ven directamente en el código.
 
