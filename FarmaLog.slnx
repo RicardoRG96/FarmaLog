@@ -34,11 +34,13 @@
     <Project Path="src/FarmaLog.Nucleo.Infrastructure/FarmaLog.Nucleo.Infrastructure.csproj" />
     <Project Path="src/FarmaLog.Nucleo.Worker/FarmaLog.Nucleo.Worker.csproj" />
     <Project Path="src/FarmaLog.Portal/FarmaLog.Portal.csproj" />
+    <Project Path="src/FarmaLog.Replicacion/FarmaLog.Replicacion.csproj" Id="a91162bb-02b9-4f7e-a9e2-57dcba43f72a" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FarmaLog.Ingesta.Tests/FarmaLog.Ingesta.Tests.csproj" />
     <Project Path="tests/FarmaLog.Nucleo.Application.Tests/FarmaLog.Nucleo.Application.Tests.csproj" Id="ab515468-375b-4108-9d2f-022393471d13" />
     <Project Path="tests/FarmaLog.Nucleo.Domain.Tests/FarmaLog.Nucleo.Domain.Tests.csproj" />
     <Project Path="tests/FarmaLog.Nucleo.Infrastructure.Tests/FarmaLog.Nucleo.Infrastructure.Tests.csproj" />
+    <Project Path="tests/FarmaLog.Replicacion.Tests/FarmaLog.Replicacion.Tests.csproj" />
   </Folder>
 </Solution>
