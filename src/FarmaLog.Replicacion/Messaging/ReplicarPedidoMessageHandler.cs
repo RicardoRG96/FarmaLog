@@ -27,31 +27,22 @@ namespace FarmaLog.Replicacion.Messaging
                     Sku: l.Sku, Cantidad: l.Cantidad, EstadoInventario: l.EstadoInventario, Lote: l.Lote))],
                 Almacen: "FLC1");
 
-                RespuestaD365 response = await client.CrearPedidoVentaAsync(pedido, cancellationToken);
+            RespuestaD365 response = await client.CrearPedidoVentaAsync(pedido, cancellationToken);
 
-                ResultadoReplicacionMessage result = response switch
-                {
-                    Aceptado aceptado => new(
-                        Resultado: ResultadoReplicacion.Aceptada,
-                        NumeroPedidoD365: aceptado.NumeroPedido,
-                        CodigoLaboratorio: message.CodigoLaboratorio,
-                        NumeroDelivery: message.NumeroDelivery,
-                        MotivosDeRechazo: []),
+            ResultadoReplicacionMessage Result(string resultado, string? numeroPedido, IReadOnlyList<string> motivos) =>
+                new(resultado, numeroPedido, message.CodigoLaboratorio, message.NumeroDelivery, motivos);
 
-                    Rechazado rechazado => new(
-                        Resultado: ResultadoReplicacion.Rechazada,
-                        NumeroPedidoD365: null,
-                        CodigoLaboratorio: message.CodigoLaboratorio,
-                        NumeroDelivery: message.NumeroDelivery,
-                        MotivosDeRechazo: [.. rechazado.Motivos]),
+            ResultadoReplicacionMessage result = response switch
+            {
+                Aceptado aceptado => Result(ResultadoReplicacion.Aceptada, aceptado.NumeroPedido, []),
+                YaExistia yaExistia => Result(ResultadoReplicacion.Aceptada, yaExistia.NumeroPedido, []),
+                Rechazado rechazado => Result(ResultadoReplicacion.Rechazada, null, [.. rechazado.Motivos]),
+                _ => throw new UnreachableException($"Respuesta de D365 no contemplada: {response.GetType().Name}")
+            };
 
-                    _ => throw new UnreachableException(
-                        $"Respuesta de D365 no contemplada: {response.GetType().Name}")
-                };
+            await publisher.PublishAsync(messageId, result, cancellationToken);
 
-                await publisher.PublishAsync(messageId, result, cancellationToken);
-
-                return MessageDestination.Complete;
-            }
+            return MessageDestination.Complete;
+        }
     }
 }

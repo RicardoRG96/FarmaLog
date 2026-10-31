@@ -29,7 +29,8 @@ namespace FarmaLog.Replicacion.Tests.Messaging
         private static IEnumerable<object[]> ResponsesThatComplete =>
         [
             [new RespuestaD365.Aceptado("PV-0000000038")],
-            [new RespuestaD365.Rechazado(["Cliente bloqueado"])]
+            [new RespuestaD365.Rechazado(["Cliente bloqueado"])],
+            [new RespuestaD365.YaExistia("PV-0000000037")]
         ];
 
         [TestMethod]
@@ -115,7 +116,7 @@ namespace FarmaLog.Replicacion.Tests.Messaging
 
         [TestMethod]
         [DynamicData(nameof(ResponsesThatComplete))]
-        public async Task ReplicarPedidoMessageHandler_Should_ReturnComplete_When_D365AcceptsOrRejectsTheOrder(
+        public async Task ReplicarPedidoMessageHandler_Should_ReturnComplete_When_D365Responds(
             RespuestaD365 response)
         {
             //Arrange
@@ -144,6 +145,29 @@ namespace FarmaLog.Replicacion.Tests.Messaging
             await Assert.ThrowsAsync<HttpRequestException>(
                () => handler.HandleAsync(MessageId, message, CancellationToken.None));
             Assert.IsEmpty(publisher.Received);
+        }
+
+        [TestMethod]
+        public async Task ReplicarPedidoMessageHandler_Should_PublishAceptadaWithD365OrderNumberAndCorrelationId_When_TheOrderAlreadyExisted()
+        {
+            //Arrange
+            ReplicarPedidoEnD365Message message = CreateMessage();
+            RespuestaD365.YaExistia existingOrder = new("PV-0000000037");
+            D365ClientSpy spy = new(existingOrder);
+            ResultadoReplicacionPublisherSpy publisher = new();
+            ReplicarPedidoMessageHandler handler = new(spy, publisher);
+
+            //Act
+            await handler.HandleAsync(MessageId, message, CancellationToken.None);
+
+            //Assert
+            PublishedResultado received = Assert.ContainsSingle(publisher.Received);
+            Assert.AreEqual(MessageId, received.CorrelationId);
+            Assert.AreEqual("Aceptada", received.Resultado.Resultado);
+            Assert.AreEqual("PV-0000000037", received.Resultado.NumeroPedidoD365);
+            Assert.AreEqual("23", received.Resultado.CodigoLaboratorio);
+            Assert.AreEqual("123456789", received.Resultado.NumeroDelivery);
+            Assert.IsEmpty(received.Resultado.MotivosDeRechazo);
         }
     }
 }
