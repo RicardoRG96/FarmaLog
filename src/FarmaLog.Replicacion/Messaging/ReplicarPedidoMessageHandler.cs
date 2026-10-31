@@ -4,12 +4,12 @@ using FarmaLog.Replicacion.Publishing;
 using System.Diagnostics;
 using static FarmaLog.Replicacion.D365.RespuestaD365;
 
-namespace FarmaLog.Replicacion
+namespace FarmaLog.Replicacion.Messaging
 {
     public sealed class ReplicarPedidoMessageHandler(
         ID365Client client, IResultadoReplicacionPublisher publisher)
     {
-        public async Task HandleAsync(string messageId, ReplicarPedidoEnD365Message message, CancellationToken cancellationToken)
+        public async Task<MessageDestination> HandleAsync(string messageId, ReplicarPedidoEnD365Message message, CancellationToken cancellationToken)
         {
             PedidoVentaD365 pedido = new(
                 CodigoLaboratorio: message.CodigoLaboratorio,
@@ -49,7 +49,9 @@ namespace FarmaLog.Replicacion
                     $"Respuesta de D365 no contemplada: {response.GetType().Name}")
             };
 
-            await publisher.PublishAsync(messageId,result,cancellationToken);
+            await publisher.PublishAsync(messageId, result, cancellationToken);
+
+            return MessageDestination.Complete;
         }
     }
 }

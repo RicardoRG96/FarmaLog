@@ -1,9 +1,10 @@
 ﻿using FarmaLog.Replicacion.Contracts;
 using FarmaLog.Replicacion.D365;
+using FarmaLog.Replicacion.Messaging;
 using FarmaLog.Replicacion.Tests.D365;
 using FarmaLog.Replicacion.Tests.Publishing;
 
-namespace FarmaLog.Replicacion.Tests
+namespace FarmaLog.Replicacion.Tests.Messaging
 {
     [TestClass]
     public class ReplicarPedidoMessageHandlerTests
@@ -24,6 +25,12 @@ namespace FarmaLog.Replicacion.Tests
                 OrdenCompra: "OC-1",
                 Urgencia: true,
                 Lineas: [new LineaDePedidoMessage(Sku: "SKU-1", Cantidad: 100, EstadoInventario: "DISPONIBLE", Lote: "LOTE-1")]);
+
+        private static IEnumerable<object[]> ResponsesThatComplete =>
+        [
+            [new RespuestaD365.Aceptado("PV-0000000038")],
+            [new RespuestaD365.Rechazado(["Cliente bloqueado"])]
+        ];
 
         [TestMethod]
         public async Task ReplicarPedidoMessageHandler_Should_SendOrderWithAllMessageFieldsAndWarehouseFLC1_When_MessageIsHandled()
@@ -98,10 +105,30 @@ namespace FarmaLog.Replicacion.Tests
             PublishedResultado received = Assert.ContainsSingle(publisher.Received);
             Assert.AreEqual("Rechazada", received.Resultado.Resultado);
             Assert.IsNull(received.Resultado.NumeroPedidoD365);
-            CollectionAssert.AreEqual(rejectedOrder.Motivos.ToList(), received.Resultado.MotivosDeRechazo.ToList());
+            CollectionAssert.AreEqual(
+                new[] { "La cuenta 23-0773456789 no existe.", "El SKU SKU-1 no existe." }, 
+                received.Resultado.MotivosDeRechazo.ToList());
             Assert.AreEqual(MessageId, received.CorrelationId);
             Assert.AreEqual("23", received.Resultado.CodigoLaboratorio);
             Assert.AreEqual("123456789", received.Resultado.NumeroDelivery);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(ResponsesThatComplete))]
+        public async Task ReplicarPedidoMessageHandler_Should_ReturnComplete_When_D365AcceptsOrRejectsTheOrder(
+            RespuestaD365 response)
+        {
+            //Arrange
+            ReplicarPedidoEnD365Message message = CreateMessage();
+            D365ClientSpy spy = new(response);
+            ResultadoReplicacionPublisherSpy publisher = new();
+            ReplicarPedidoMessageHandler handler = new(spy, publisher);
+
+            //Act
+            MessageDestination destination = await handler.HandleAsync(MessageId, message, CancellationToken.None);
+
+            //Assert
+            Assert.AreEqual(MessageDestination.Complete, destination);
         }
     }
 }
