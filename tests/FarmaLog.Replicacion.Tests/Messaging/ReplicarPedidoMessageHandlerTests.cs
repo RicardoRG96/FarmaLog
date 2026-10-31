@@ -130,5 +130,20 @@ namespace FarmaLog.Replicacion.Tests.Messaging
             //Assert
             Assert.AreEqual(MessageDestination.Complete, destination);
         }
+
+        [TestMethod]
+        public async Task ReplicarPedidoMessageHandler_Should_PropagateExceptionAndNotPublishAnything_When_D365ClientThrows()
+        {
+            //Arrange
+            ReplicarPedidoEnD365Message message = CreateMessage();
+            ThrowingD365Client client = new();
+            ResultadoReplicacionPublisherSpy publisher = new();
+            ReplicarPedidoMessageHandler handler = new(client, publisher);
+
+            //Act + Assert
+            await Assert.ThrowsAsync<HttpRequestException>(
+               () => handler.HandleAsync(MessageId, message, CancellationToken.None));
+            Assert.IsEmpty(publisher.Received);
+        }
     }
 }
