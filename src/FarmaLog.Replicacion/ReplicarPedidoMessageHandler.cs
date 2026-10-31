@@ -1,11 +1,13 @@
 ﻿using FarmaLog.Replicacion.Contracts;
 using FarmaLog.Replicacion.D365;
+using FarmaLog.Replicacion.Publishing;
 
 namespace FarmaLog.Replicacion
 {
-    public sealed class ReplicarPedidoMessageHandler(ID365Client client)
+    public sealed class ReplicarPedidoMessageHandler(
+        ID365Client client, IResultadoReplicacionPublisher publisher)
     {
-        public async Task<RespuestaD365> HandleAsync(ReplicarPedidoEnD365Message message, CancellationToken cancellationToken)
+        public async Task HandleAsync(string messageId, ReplicarPedidoEnD365Message message, CancellationToken cancellationToken)
         {
             PedidoVentaD365 pedido = new(
                 CodigoLaboratorio: message.CodigoLaboratorio,
@@ -23,7 +25,17 @@ namespace FarmaLog.Replicacion
                     Sku: l.Sku, Cantidad: l.Cantidad, EstadoInventario: l.EstadoInventario, Lote: l.Lote))],
                 Almacen: "FLC1");
 
-            return await client.CrearPedidoVentaAsync(pedido, cancellationToken);
+            RespuestaD365.Aceptado response = (RespuestaD365.Aceptado)await client.CrearPedidoVentaAsync(pedido, cancellationToken);
+
+            await publisher.PublishAsync(
+                correlationId: messageId,
+                resultado: new(
+                    Resultado: "Aceptada",
+                    NumeroPedidoD365: response.NumeroPedido,
+                    CodigoLaboratorio: message.CodigoLaboratorio,
+                    NumeroDelivery: message.NumeroDelivery,
+                    MotivosDeRechazo: []),
+                cancellationToken: cancellationToken);
         }
     }
 }
