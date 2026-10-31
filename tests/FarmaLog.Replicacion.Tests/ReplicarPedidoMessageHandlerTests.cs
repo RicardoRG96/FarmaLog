@@ -8,11 +8,10 @@ namespace FarmaLog.Replicacion.Tests
     [TestClass]
     public class ReplicarPedidoMessageHandlerTests
     {
-        [TestMethod]
-        public async Task ReplicarPedidoMessageHandler_Should_SendOrderWithAllMessageFieldsAndWarehouseFLC1_When_MessageIsHandled()
-        {
-            //Arrange
-            ReplicarPedidoEnD365Message message = new(
+        private const string MessageId = "11111111-1111-1111-1111-111111111111";
+
+        private static ReplicarPedidoEnD365Message CreateMessage() =>
+            new(
                 CodigoLaboratorio: "23",
                 CuentaCliente: "23-0773456789",
                 DireccionDespacho: "23-773456789D1",
@@ -26,13 +25,17 @@ namespace FarmaLog.Replicacion.Tests
                 Urgencia: true,
                 Lineas: [new LineaDePedidoMessage(Sku: "SKU-1", Cantidad: 100, EstadoInventario: "DISPONIBLE", Lote: "LOTE-1")]);
 
+        [TestMethod]
+        public async Task ReplicarPedidoMessageHandler_Should_SendOrderWithAllMessageFieldsAndWarehouseFLC1_When_MessageIsHandled()
+        {
+            //Arrange
+            ReplicarPedidoEnD365Message message = CreateMessage();
             D365ClientSpy spy = new();
             ResultadoReplicacionPublisherSpy publisher = new();
-            string messageId = "11111111-1111-1111-1111-111111111111";
             ReplicarPedidoMessageHandler handler = new(spy, publisher);
 
             //Act
-            await handler.HandleAsync(messageId, message, CancellationToken.None);
+            await handler.HandleAsync(MessageId, message, CancellationToken.None);
 
             //Assert
             PedidoVentaD365 received = Assert.ContainsSingle(spy.Received);
@@ -60,36 +63,45 @@ namespace FarmaLog.Replicacion.Tests
         public async Task ReplicarPedidoMessageHandler_Should_PublishAceptadaWithD365OrderNumberAndCorrelationId_When_D365AcceptsTheOrder()
         {
             //Arrange
-            ReplicarPedidoEnD365Message message = new(
-                CodigoLaboratorio: "23",
-                CuentaCliente: "23-0773456789",
-                DireccionDespacho: "23-773456789D1",
-                TipoOrdenVenta: "23F1",
-                EsCenabast: false,
-                DocumentoVentaCenabast: null,
-                Observacion: "Entregar en bodega 1",
-                FechaEntregaSolicitada: new DateOnly(2026, 11, 4),
-                NumeroDelivery: "123456789",
-                OrdenCompra: "OC-1",
-                Urgencia: true,
-                Lineas: [new LineaDePedidoMessage(Sku: "SKU-1", Cantidad: 100, EstadoInventario: "DISPONIBLE", Lote: "LOTE-1")]);
-
+            ReplicarPedidoEnD365Message message = CreateMessage();
             D365ClientSpy spy = new();
             ResultadoReplicacionPublisherSpy publisher = new();
-            string messageId = "11111111-1111-1111-1111-111111111111";
             ReplicarPedidoMessageHandler handler = new(spy, publisher);
 
             //Act
-            await handler.HandleAsync(messageId, message, CancellationToken.None);
+            await handler.HandleAsync(MessageId, message, CancellationToken.None);
 
             //Assert
             PublishedResultado received = Assert.ContainsSingle(publisher.Received);
-            Assert.AreEqual(messageId, received.CorrelationId);
+            Assert.AreEqual(MessageId, received.CorrelationId);
             Assert.AreEqual("Aceptada", received.Resultado.Resultado);
             Assert.AreEqual("PV-0000000038", received.Resultado.NumeroPedidoD365);
             Assert.AreEqual("23", received.Resultado.CodigoLaboratorio);
             Assert.AreEqual("123456789", received.Resultado.NumeroDelivery);
             Assert.IsEmpty(received.Resultado.MotivosDeRechazo);
+        }
+
+        [TestMethod]
+        public async Task ReplicarPedidoMessageHandler_Should_PublishRechazadaWithReasonsAndNoD365OrderNumber_When_D365RejectsTheOrder()
+        {
+            //Arrange
+            ReplicarPedidoEnD365Message message = CreateMessage();
+            RespuestaD365.Rechazado rejectedOrder = new(["La cuenta 23-0773456789 no existe.", "El SKU SKU-1 no existe."]);
+            D365ClientSpy spy = new(rejectedOrder);
+            ResultadoReplicacionPublisherSpy publisher = new();
+            ReplicarPedidoMessageHandler handler = new(spy, publisher);
+
+            //Act
+            await handler.HandleAsync(MessageId, message, CancellationToken.None);
+
+            //Assert
+            PublishedResultado received = Assert.ContainsSingle(publisher.Received);
+            Assert.AreEqual("Rechazada", received.Resultado.Resultado);
+            Assert.IsNull(received.Resultado.NumeroPedidoD365);
+            CollectionAssert.AreEqual(rejectedOrder.Motivos.ToList(), received.Resultado.MotivosDeRechazo.ToList());
+            Assert.AreEqual(MessageId, received.CorrelationId);
+            Assert.AreEqual("23", received.Resultado.CodigoLaboratorio);
+            Assert.AreEqual("123456789", received.Resultado.NumeroDelivery);
         }
     }
 }
