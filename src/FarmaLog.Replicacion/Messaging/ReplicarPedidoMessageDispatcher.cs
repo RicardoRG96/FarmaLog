@@ -36,6 +36,7 @@ namespace FarmaLog.Replicacion.Messaging
             if (string.IsNullOrWhiteSpace(message.NumeroDelivery)) return false;
             if (message.FechaEntregaSolicitada == default) return false;
             if (message.Lineas is null) return false;
+            if (message.Lineas.Count <= 0) return false;
 
             return !message.Lineas.Any(linea =>
                 string.IsNullOrWhiteSpace(linea.Sku) ||

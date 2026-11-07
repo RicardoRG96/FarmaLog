@@ -138,5 +138,41 @@ namespace FarmaLog.Replicacion.Tests.Messaging
             Assert.IsEmpty(spy.Received);
             Assert.IsEmpty(publisher.Received);
         }
+
+        [TestMethod]
+        public async Task ReplicarPedidoMessageDispatcher_Should_ReturnDeadLetter_When_LineasAreEmpty()
+        {
+            //Arrange
+            D365ClientSpy spy = new();
+            ResultadoReplicacionPublisherSpy publisher = new();
+            ReplicarPedidoMessageHandler handler = new(spy, publisher);
+
+            ReplicarPedidoMessageDispatcher dispatcher = new(handler);
+            string bodyWithEmptyLines = """
+            {
+                "CodigoLaboratorio": "23",
+                "NumeroDelivery": "123456789",
+                "CuentaCliente": "23-0778903671",
+                "DireccionDespacho": "23-778903671D1",
+                "TipoOrdenVenta": "23F1",
+                "EsCenabast": false,
+                "DocumentoVentaCenabast": null,
+                "Observacion": "Entregar en bodega 1",
+                "FechaEntregaSolicitada": "2026-11-15",
+                "OrdenCompra": "OC-1",
+                "Urgencia": true,
+                "Lineas": []
+            }
+            """;
+
+            //Act
+            MessageDestination destination = await dispatcher.DispatchAsync(
+                MessageId, bodyWithEmptyLines, CancellationToken.None);
+
+            //Assert
+            Assert.AreEqual(MessageDestination.DeadLetter, destination);
+            Assert.IsEmpty(spy.Received);
+            Assert.IsEmpty(publisher.Received);
+        }
     }
 }
