@@ -24,6 +24,11 @@ namespace FarmaLog.Replicacion.Messaging
                 return MessageDestination.DeadLetter;
             }
 
+            if (string.IsNullOrWhiteSpace(messageId))
+            {
+                return MessageDestination.DeadLetter;
+            }
+
             return await handler.HandleAsync(messageId, message!, cancellationToken);
         }
 

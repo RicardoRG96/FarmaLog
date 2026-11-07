@@ -195,5 +195,25 @@ namespace FarmaLog.Replicacion.Tests.Messaging
             Assert.IsEmpty(spy.Received);
             Assert.IsEmpty(publisher.Received);
         }
+
+        [TestMethod]
+        public async Task ReplicarPedidoMessageDispatcher_Should_ReturnDeadLetter_When_TheBodyIsValidButMessageIdIsEmpty()
+        {
+            //Arrange
+            D365ClientSpy spy = new();
+            ResultadoReplicacionPublisherSpy publisher = new();
+            ReplicarPedidoMessageHandler handler = new(spy, publisher);
+
+            ReplicarPedidoMessageDispatcher dispatcher = new(handler);
+
+            //Act
+            MessageDestination destination = await dispatcher.DispatchAsync(
+                "", CreateValidBody(), CancellationToken.None);
+
+            //Assert
+            Assert.AreEqual(MessageDestination.DeadLetter, destination);
+            Assert.IsEmpty(spy.Received);
+            Assert.IsEmpty(publisher.Received);
+        }
     }
 }
