@@ -30,7 +30,7 @@ namespace FarmaLog.Replicacion.Messaging
                 return MessageDestination.DeadLetter;
             }
 
-            return await handler.HandleAsync(messageId, message!, cancellationToken);
+            return await handler.HandleAsync(messageId, message, cancellationToken);
         }
 
         private static bool IsWellFormed([NotNullWhen(true)] ReplicarPedidoEnD365Message? message)
@@ -45,7 +45,7 @@ namespace FarmaLog.Replicacion.Messaging
             if (message.Lineas is null) return false;
             if (message.Lineas.Count == 0) return false;
 
-            return message.Lineas.Any(linea =>
+            return !message.Lineas.Any(linea =>
                 string.IsNullOrWhiteSpace(linea.Sku) ||
                 linea.Cantidad <= 0 ||
                 string.IsNullOrWhiteSpace(linea.EstadoInventario));
