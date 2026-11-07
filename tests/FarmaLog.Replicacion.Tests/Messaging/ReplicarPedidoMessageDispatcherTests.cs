@@ -148,26 +148,13 @@ namespace FarmaLog.Replicacion.Tests.Messaging
             ReplicarPedidoMessageHandler handler = new(spy, publisher);
 
             ReplicarPedidoMessageDispatcher dispatcher = new(handler);
-            string bodyWithoutDocumentoVentaCenabast = """
-            {
-                "CodigoLaboratorio": "23",
-                "NumeroDelivery": "123456789",
-                "CuentaCliente": "23-0778903671",
-                "DireccionDespacho": "23-778903671D1",
-                "TipoOrdenVenta": "23F1",
-                "EsCenabast": true,
-                "DocumentoVentaCenabast": null,
-                "Observacion": "Entregar en bodega 1",
-                "FechaEntregaSolicitada": "2026-11-15",
-                "OrdenCompra": "OC-1",
-                "Urgencia": true,
-                "Lineas": []
-            }
-            """;
+            JsonNode body = JsonNode.Parse(CreateValidBody())!;
+            body["Lineas"] = new JsonArray();
+            string bodyWithEmptyLineas = body.ToJsonString();
 
             //Act
             MessageDestination destination = await dispatcher.DispatchAsync(
-                MessageId, bodyWithoutDocumentoVentaCenabast, CancellationToken.None);
+                MessageId, bodyWithEmptyLineas, CancellationToken.None);
 
             //Assert
             Assert.AreEqual(MessageDestination.DeadLetter, destination);

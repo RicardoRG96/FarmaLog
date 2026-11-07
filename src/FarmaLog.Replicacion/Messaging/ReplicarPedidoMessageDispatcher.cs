@@ -1,4 +1,5 @@
 ﻿using FarmaLog.Replicacion.Contracts;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace FarmaLog.Replicacion.Messaging
@@ -19,12 +20,12 @@ namespace FarmaLog.Replicacion.Messaging
                 return MessageDestination.DeadLetter;
             }
 
-            if (!IsWellFormed(message!))
+            if (string.IsNullOrWhiteSpace(messageId))
             {
                 return MessageDestination.DeadLetter;
             }
 
-            if (string.IsNullOrWhiteSpace(messageId))
+            if (!IsWellFormed(message))
             {
                 return MessageDestination.DeadLetter;
             }
@@ -32,7 +33,7 @@ namespace FarmaLog.Replicacion.Messaging
             return await handler.HandleAsync(messageId, message!, cancellationToken);
         }
 
-        private static bool IsWellFormed(ReplicarPedidoEnD365Message message)
+        private static bool IsWellFormed([NotNullWhen(true)] ReplicarPedidoEnD365Message? message)
         {
             if (message is null) return false;
             if (string.IsNullOrWhiteSpace(message.CodigoLaboratorio)) return false;
@@ -42,9 +43,9 @@ namespace FarmaLog.Replicacion.Messaging
             if (string.IsNullOrWhiteSpace(message.NumeroDelivery)) return false;
             if (message.FechaEntregaSolicitada == default) return false;
             if (message.Lineas is null) return false;
-            if (message.Lineas.Count <= 0) return false;
+            if (message.Lineas.Count == 0) return false;
 
-            return !message.Lineas.Any(linea =>
+            return message.Lineas.Any(linea =>
                 string.IsNullOrWhiteSpace(linea.Sku) ||
                 linea.Cantidad <= 0 ||
                 string.IsNullOrWhiteSpace(linea.EstadoInventario));
