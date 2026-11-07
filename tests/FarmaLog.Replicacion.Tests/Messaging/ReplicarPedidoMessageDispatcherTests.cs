@@ -1,6 +1,7 @@
 ﻿using FarmaLog.Replicacion.Messaging;
 using FarmaLog.Replicacion.Tests.D365;
 using FarmaLog.Replicacion.Tests.Publishing;
+using System.Text.Json;
 
 namespace FarmaLog.Replicacion.Tests.Messaging
 {
@@ -50,7 +51,7 @@ namespace FarmaLog.Replicacion.Tests.Messaging
         }
 
         [TestMethod]
-        public async Task ReplicarPedidoMessageDispatcher_Should_ReturnCompleteAndCallD365ClientAndPublish_When_MessageIdIsPresentAndTheBodyIsValidJson()
+        public async Task ReplicarPedidoMessageDispatcher_Should_ReturnCompleteAndCallD365ClientAndPublish_When_TheMessageIsWellFormed()
         {
             //Arrange
             D365ClientSpy spy = new();
@@ -67,9 +68,24 @@ namespace FarmaLog.Replicacion.Tests.Messaging
             //Assert
             Assert.AreEqual(MessageDestination.Complete, destination);
             Assert.ContainsSingle(spy.Received);
-            Assert.ContainsSingle(publisher.Received);
             PublishedResultado published = Assert.ContainsSingle(publisher.Received);
             Assert.AreEqual(MessageId, published.CorrelationId);
+        }
+
+        [TestMethod]
+        public async Task ReplicarPedidoMessageDispatcher_Should_PropagateTheException_When_D365ClientThrowsJsonException()
+        {
+            //Arrange
+            ThrowingD365Client client = new(new JsonException("Unreadable D365 response"));
+            ResultadoReplicacionPublisherSpy publisher = new();
+            ReplicarPedidoMessageHandler handler = new(client, publisher);
+
+            ReplicarPedidoMessageDispatcher dispatcher = new(handler);
+
+            //Act + Assert
+            await Assert.ThrowsAsync<JsonException>(
+                () => dispatcher.DispatchAsync(MessageId, CreateValidBody(), CancellationToken.None));
+            Assert.IsEmpty(publisher.Received);
         }
     }
 }

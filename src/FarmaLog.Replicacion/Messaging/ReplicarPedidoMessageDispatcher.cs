@@ -6,19 +6,20 @@ namespace FarmaLog.Replicacion.Messaging
     public sealed class ReplicarPedidoMessageDispatcher(
         ReplicarPedidoMessageHandler handler)
     {
-        public async Task<MessageDestination> DispatchAsync(string messageId, string body, CancellationToken ct)
+        public async Task<MessageDestination> DispatchAsync(string messageId, string body, CancellationToken cancellationToken)
         {
+            ReplicarPedidoEnD365Message? message;
+
             try
             {
-                ReplicarPedidoEnD365Message? message = 
-                    JsonSerializer.Deserialize<ReplicarPedidoEnD365Message>(body);
-
-                return await handler.HandleAsync(messageId, message!, ct);
+                message = JsonSerializer.Deserialize<ReplicarPedidoEnD365Message>(body);
             }
             catch (JsonException)
             {
                 return MessageDestination.DeadLetter;
             }
+
+            return await handler.HandleAsync(messageId, message!, cancellationToken);
         }
     }
 }
