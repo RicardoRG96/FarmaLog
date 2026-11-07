@@ -29,6 +29,7 @@ namespace FarmaLog.Replicacion.Messaging
 
         private static bool IsWellFormed(ReplicarPedidoEnD365Message message)
         {
+            if (message is null) return false;
             if (string.IsNullOrWhiteSpace(message.CodigoLaboratorio)) return false;
             if (string.IsNullOrWhiteSpace(message.CuentaCliente)) return false;
             if (string.IsNullOrWhiteSpace(message.DireccionDespacho)) return false;
