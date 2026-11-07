@@ -19,7 +19,28 @@ namespace FarmaLog.Replicacion.Messaging
                 return MessageDestination.DeadLetter;
             }
 
+            if (!IsWellFormed(message!))
+            {
+                return MessageDestination.DeadLetter;
+            }
+
             return await handler.HandleAsync(messageId, message!, cancellationToken);
+        }
+
+        private static bool IsWellFormed(ReplicarPedidoEnD365Message message)
+        {
+            if (string.IsNullOrWhiteSpace(message.CodigoLaboratorio)) return false;
+            if (string.IsNullOrWhiteSpace(message.CuentaCliente)) return false;
+            if (string.IsNullOrWhiteSpace(message.DireccionDespacho)) return false;
+            if (string.IsNullOrWhiteSpace(message.TipoOrdenVenta)) return false;
+            if (string.IsNullOrWhiteSpace(message.NumeroDelivery)) return false;
+            if (message.FechaEntregaSolicitada == default) return false;
+            if (message.Lineas is null) return false;
+
+            return !message.Lineas.Any(linea =>
+                string.IsNullOrWhiteSpace(linea.Sku) ||
+                linea.Cantidad <= 0 ||
+                string.IsNullOrWhiteSpace(linea.EstadoInventario));
         }
     }
 }

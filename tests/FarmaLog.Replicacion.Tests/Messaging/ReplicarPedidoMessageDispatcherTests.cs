@@ -2,6 +2,7 @@
 using FarmaLog.Replicacion.Tests.D365;
 using FarmaLog.Replicacion.Tests.Publishing;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace FarmaLog.Replicacion.Tests.Messaging
 {
@@ -29,6 +30,34 @@ namespace FarmaLog.Replicacion.Tests.Messaging
                 ]
             }
             """;
+
+        private static string CreateBodyWithout(string property)
+        {
+            JsonNode body = JsonNode.Parse(CreateValidBody())!;
+            body.AsObject().Remove(property);
+            return body.ToJsonString();
+        }
+
+        private static string CreateBodyWithoutLineProperty(string property)
+        {
+            JsonNode body = JsonNode.Parse(CreateValidBody())!;
+            body["Lineas"]![0]!.AsObject().Remove(property);
+            return body.ToJsonString();
+        }
+
+        public static IEnumerable<object[]> BodiesMissingARequiredField =>
+        [
+            ["CodigoLaboratorio", CreateBodyWithout("CodigoLaboratorio")],
+            ["CuentaCliente", CreateBodyWithout("CuentaCliente")],
+            ["DireccionDespacho", CreateBodyWithout("DireccionDespacho")],
+            ["TipoOrdenVenta", CreateBodyWithout("TipoOrdenVenta")],
+            ["FechaEntregaSolicitada", CreateBodyWithout("FechaEntregaSolicitada")],
+            ["NumeroDelivery", CreateBodyWithout("NumeroDelivery")],
+            ["Lineas", CreateBodyWithout("Lineas")],
+            ["Lineas[0].Sku", CreateBodyWithoutLineProperty("Sku")],
+            ["Lineas[0].Cantidad", CreateBodyWithoutLineProperty("Cantidad")],
+            ["Lineas[0].EstadoInventario", CreateBodyWithoutLineProperty("EstadoInventario")],
+        ];
 
         [TestMethod]
         public async Task ReplicarPedidoMessageDispatcher_Should_ReturnDeadLetterWithoutCallingD365ClientOrPublishing_When_TheBodyIsNotValidJson()
@@ -85,6 +114,28 @@ namespace FarmaLog.Replicacion.Tests.Messaging
             //Act + Assert
             await Assert.ThrowsAsync<JsonException>(
                 () => dispatcher.DispatchAsync(MessageId, CreateValidBody(), CancellationToken.None));
+            Assert.IsEmpty(publisher.Received);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(BodiesMissingARequiredField))]
+        public async Task ReplicarPedidoMessageDispatcher_Should_ReturnDeadLetter_When_ARequiredFieldIsMissing(
+            string missingField, string body)
+        {
+            //Arrange
+            D365ClientSpy spy = new();
+            ResultadoReplicacionPublisherSpy publisher = new();
+            ReplicarPedidoMessageHandler handler = new(spy, publisher);
+
+            ReplicarPedidoMessageDispatcher dispatcher = new(handler);
+
+            //Act
+            MessageDestination destination = await dispatcher.DispatchAsync(
+                MessageId, body, CancellationToken.None);
+
+            //Assert
+            Assert.AreEqual(MessageDestination.DeadLetter, destination, $"Falta {missingField}");
+            Assert.IsEmpty(spy.Received);
             Assert.IsEmpty(publisher.Received);
         }
     }
