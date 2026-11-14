@@ -7,6 +7,15 @@ namespace FarmaLog.Replicacion.Tests.D365
     [TestClass]
     public class D365HttpClientTests
     {
+        private static (D365HttpClient Client, StubHttpMessageHandler Stub) CreateClient(
+            HttpStatusCode statusCode, string responseBody = "")
+        {
+            StubHttpMessageHandler stub = new(statusCode, responseBody);
+            HttpClient httpClient = new(stub) { BaseAddress = new Uri("https://d365.test/") };
+
+            return (new D365HttpClient(httpClient), stub);
+        }
+
         private static PedidoVentaD365 CreatePedidoVentaD365() =>
             new(
                 CodigoLaboratorio: "23",
@@ -27,9 +36,8 @@ namespace FarmaLog.Replicacion.Tests.D365
         public async Task D365HttpClient_Should_PostTheSerializedOrderToSalesOrders_When_CreatingAnOrder()
         {
             //Arrange
-            StubHttpMessageHandler stub = new(HttpStatusCode.OK, """{ "NumeroPedido": "PV-0000000038" }""");
-            HttpClient httpClient = new(stub) { BaseAddress = new Uri("https://d365.test/") };
-            D365HttpClient client = new(httpClient);
+            (D365HttpClient client, StubHttpMessageHandler stub) = 
+                CreateClient(HttpStatusCode.OK, """{ "NumeroPedido": "PV-0000000038" }""");
             PedidoVentaD365 pedido = CreatePedidoVentaD365();
 
             //Act
@@ -42,6 +50,21 @@ namespace FarmaLog.Replicacion.Tests.D365
             JsonNode body = JsonNode.Parse(received.Body!)!;
             Assert.AreEqual("123456789", body["NumeroDelivery"]!.ToString());
             Assert.AreEqual("FLC1", body["Almacen"]!.ToString());
+        }
+
+        [TestMethod]
+        public async Task D365HttpClient_Should_ReturnAceptadoWithTheOrderNumber_When_D365Responds200()
+        {
+            //Arrange
+            (D365HttpClient client, _) =
+                CreateClient(HttpStatusCode.OK, """{ "NumeroPedido": "PV-0000000099" }""");
+            PedidoVentaD365 pedido = CreatePedidoVentaD365();
+
+            //Act
+            RespuestaD365 response = await client.CrearPedidoVentaAsync(pedido, CancellationToken.None);
+
+            //Assert
+            Assert.AreEqual(new RespuestaD365.Aceptado("PV-0000000099"), response);
         }
     }
 }
