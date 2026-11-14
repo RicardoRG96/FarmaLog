@@ -68,7 +68,7 @@ namespace FarmaLog.Replicacion.Tests.D365
         }
 
         [TestMethod]
-        public async Task D365HttpClient_Should_ReturnRechazadoWitAllMotivosInOrder_When_D365Responds400()
+        public async Task D365HttpClient_Should_ReturnRechazadoWithAllMotivosInOrder_When_D365Responds400()
         {
             //Arrange
             (D365HttpClient client, _) =
@@ -89,6 +89,22 @@ namespace FarmaLog.Replicacion.Tests.D365
             CollectionAssert.AreEqual(
                 new[] { "La cuenta 23-0773456789 no existe.", "El SKU SKU-1 no existe." },
                 rechazado.Motivos.ToList());
+        }
+
+        [TestMethod]
+        public async Task D365HttpClient_Should_ReturnYaExistiaWithTheExistingOrderNumber_When_D365RejectsBecauseTheOrderAlreadyExists()
+        {
+            //Arrange
+            (D365HttpClient client, _) =
+                CreateClient(HttpStatusCode.BadRequest,
+                    """{ "Motivos": ["Ya existe un pedido con ese numero de pedido del cliente: PV-0000000037"] }""");
+            PedidoVentaD365 pedido = CreatePedidoVentaD365();
+
+            //Act
+            RespuestaD365 response = await client.CrearPedidoVentaAsync(pedido, CancellationToken.None);
+
+            //Assert
+            Assert.AreEqual(new RespuestaD365.YaExistia("PV-0000000037"), response);
         }
     }
 }
