@@ -1,0 +1,87 @@
+@baseUrl = http://localhost:5365
+
+### 1. Pedido válido → 200 con PV-0000000001
+POST {{baseUrl}}/api/salesorders
+Content-Type: application/json
+
+{
+  "CodigoLaboratorio": "23",
+  "CuentaCliente": "23-0778903671",
+  "DireccionDespacho": "23-778903671D1",
+  "TipoOrdenVenta": "23F1",
+  "EsCenabast": false,
+  "DocumentoVentaCenabast": null,
+  "Observacion": "Entregar en bodega 2",
+  "FechaEntregaSolicitada": "2026-11-20",
+  "NumeroDelivery": "DEL-0001",
+  "OrdenCompra": null,
+  "Urgencia": false,
+  "Lineas": [ { "Sku": "SKU-1", "Cantidad": 100, "EstadoInventario": "DISPONIBLE", "Lote": null } ],
+  "Almacen": "FLC1"
+}
+
+### 2. El mismo pedido otra vez → 400 con un único motivo "Ya existe…: PV-0000000001"
+POST {{baseUrl}}/api/salesorders
+Content-Type: application/json
+
+{
+  "CodigoLaboratorio": "23",
+  "CuentaCliente": "23-0778903671",
+  "DireccionDespacho": "23-778903671D1",
+  "TipoOrdenVenta": "23F1",
+  "EsCenabast": false,
+  "DocumentoVentaCenabast": null,
+  "Observacion": "Entregar en bodega 2",
+  "FechaEntregaSolicitada": "2026-11-20",
+  "NumeroDelivery": "DEL-0001",
+  "OrdenCompra": null,
+  "Urgencia": false,
+  "Lineas": [ { "Sku": "SKU-1", "Cantidad": 100, "EstadoInventario": "DISPONIBLE", "Lote": null } ],
+  "Almacen": "FLC1"
+}
+
+### 3. Cuenta y dos SKU inexistentes → 400 con tres motivos
+POST {{baseUrl}}/api/salesorders
+Content-Type: application/json
+
+{
+  "CodigoLaboratorio": "23",
+  "CuentaCliente": "23-0999999999",
+  "DireccionDespacho": "23-999999999D1",
+  "TipoOrdenVenta": "23F1",
+  "EsCenabast": false,
+  "DocumentoVentaCenabast": null,
+  "Observacion": null,
+  "FechaEntregaSolicitada": "2026-11-20",
+  "NumeroDelivery": "DEL-0002",
+  "OrdenCompra": null,
+  "Urgencia": false,
+  "Lineas": [
+    { "Sku": "SKU-INEXISTENTE-1", "Cantidad": 10, "EstadoInventario": "DISPONIBLE", "Lote": null },
+    { "Sku": "SKU-INEXISTENTE-2", "Cantidad": 5, "EstadoInventario": "DISPONIBLE", "Lote": null }
+  ],
+  "Almacen": "FLC1"
+}
+
+### 4. Listado de lo registrado
+GET {{baseUrl}}/api/salesorders
+
+### 5. Pedido nuevo para probar la caída (SimulateOutage = true → 503; false → 200)
+POST {{baseUrl}}/api/salesorders
+Content-Type: application/json
+
+{
+  "CodigoLaboratorio": "23",
+  "CuentaCliente": "23-0778903671",
+  "DireccionDespacho": "23-778903671D1",
+  "TipoOrdenVenta": "23F1",
+  "EsCenabast": false,
+  "DocumentoVentaCenabast": null,
+  "Observacion": null,
+  "FechaEntregaSolicitada": "2026-11-20",
+  "NumeroDelivery": "DEL-0003",
+  "OrdenCompra": null,
+  "Urgencia": false,
+  "Lineas": [ { "Sku": "SKU-1", "Cantidad": 50, "EstadoInventario": "DISPONIBLE", "Lote": null } ],
+  "Almacen": "FLC1"
+}
