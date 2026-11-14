@@ -23,6 +23,9 @@
 #    Es el mismo argumento que salva a Azure SQL: borrar el recurso barato con
 #    la penalización más alta es el peor negocio disponible.
 #
+# Al borrar el namespace caen con él las dos colas, el tópico de resultado y
+# sus suscripciones: todo eso vive dentro del namespace.
+#
 # Para borrar TODO (fin de proyecto, o para probar el arranque desde cero):
 #   az group delete --name rg-farmalog --yes --no-wait
 #   ⚠️ Eso paga la penalización de una hora del free offer de SQL Y los ~30
@@ -37,9 +40,10 @@ ACA_APP="ca-nucleo-worker"
 WORKER_DIR="src/FarmaLog.Nucleo.Worker"
 ENV_FILE=".env.local"
 SECRETS_FILE=".secrets-comandos.local"
+FUNCTION_SETTINGS="src/FarmaLog.Replicacion/local.settings.json"
 
 az account show -o none 2>/dev/null \
-  || { echo "No hay sesión de Azure. Corré 'az login --use-device-code' primero."; exit 1; }
+  || { echo "No hay sesión de Azure. Corre 'az login --use-device-code' primero."; exit 1; }
 
 echo "==> Recursos actuales en $RG:"
 az resource list -g "$RG" --query "[].{nombre:name, tipo:type}" -o table
@@ -71,6 +75,14 @@ if [[ -f "$ENV_FILE" ]]; then
   mv "$ENV_FILE.tmp" "$ENV_FILE"
   chmod 600 "$ENV_FILE"
   echo "==> $ENV_FILE: eliminada la entrada de Service Bus (la de SQL sigue válida)"
+fi
+
+# La Function lee "ServiceBus" de su local.settings.json: se VACÍA (no se
+# borra el archivo). El host fallará al arrancar diciendo que falta la
+# conexión, en vez de intentar conectarse a un namespace que ya no existe.
+if [[ -f "$FUNCTION_SETTINGS" ]]; then
+  sed -i 's|"ServiceBus": "[^"]*"|"ServiceBus": ""|' "$FUNCTION_SETTINGS"
+  echo "==> $FUNCTION_SETTINGS: vaciada la entrada de Service Bus"
 fi
 
 rm -f "$SECRETS_FILE"
@@ -106,5 +118,6 @@ echo "==> Listo. Sobrevive:"
 az resource list -g "$RG" --query "[].{nombre:name, tipo:type}" -o table
 echo
 echo "Mañana: bash infra/provision.sh"
-echo "Crea el namespace nuevo y repone su configuración en los TRES destinos:"
-echo ".env.local, user-secrets y los secrets del Container App."
+echo "Crea el namespace nuevo y repone su configuración en los CUATRO destinos:"
+echo ".env.local, user-secrets, los secrets del Container App y el"
+echo "local.settings.json de la Function."

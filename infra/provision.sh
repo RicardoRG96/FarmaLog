@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# FarmaLog — aprovisionamiento de la rebanada 1 (walking skeleton).
+# FarmaLog — aprovisionamiento de las rebanadas 1 y 2.
 #
 # IDEMPOTENTE: converge al estado deseado. Se puede correr todos los días,
 # con el entorno vacío, a medias o completo. Descubre lo que ya existe en el
@@ -44,24 +44,39 @@ WORKER_DIR="src/FarmaLog.Nucleo.Worker"
 ENV_FILE=".env.local"
 SECRETS_FILE=".secrets-comandos.local"
 
+# --- Rebanada 2: Replicación -------------------------------------------------
+REPLICACION_QUEUE="replicar-pedido-d365"
+RESULTADO_TOPIC="resultado-replicacion"
+NUCLEO_SUBSCRIPTION="nucleo"
+NOTIFICACIONES_SUBSCRIPTION="notificaciones"
+
+FUNCTION_DIR="src/FarmaLog.Replicacion"
+FUNCTION_SETTINGS="$FUNCTION_DIR/local.settings.json"
+D365_FAKE_URL="http://localhost:5365/"   # con / final: la ruta relativa del adaptador va sin / inicial
+
 # ---------------------------------------------------------------------------
 # Chequeos previos — el script VERIFICA la sesión, no la crea.
 # ---------------------------------------------------------------------------
 az account show -o none 2>/dev/null \
-  || { echo "No hay sesión de Azure. Corré 'az login --use-device-code' primero."; exit 1; }
+  || { echo "No hay sesión de Azure. Corre 'az login --use-device-code' primero."; exit 1; }
 
 # El script escribe secretos en la raíz del repo: se niega a correr si esos
 # archivos pueden terminar en un commit.
 for ARCHIVO in "$ENV_FILE" "$SECRETS_FILE"; do
   grep -qxF "$ARCHIVO" .gitignore 2>/dev/null \
-    || { echo "FALTA en .gitignore: $ARCHIVO — agregalo antes de continuar."; exit 1; }
+    || { echo "FALTA en .gitignore: $ARCHIVO — agrégalo antes de continuar."; exit 1; }
 done
+
+# local.settings.json vive en la carpeta de la Function y puede cubrirlo
+# cualquier .gitignore del repo: se le pregunta a git, no a un archivo.
+git check-ignore -q "$FUNCTION_SETTINGS" \
+  || { echo "git NO ignora $FUNCTION_SETTINGS — agrégalo al .gitignore antes de continuar."; exit 1; }
 
 # Fail-fast sobre la imagen: si el placeholder sigue puesto, el bloque de
 # Container Apps fallaría RECIÉN al final, después de crear todo lo demás.
 # Mismo criterio que el guard del .gitignore: verificar antes de crear nada.
 if [[ "$ACA_IMAGE" == *CAMBIAME* ]]; then
-  echo "Falta la imagen de GHCR. Editá ACA_IMAGE en este script, o corré:"
+  echo "Falta la imagen de GHCR. Edita ACA_IMAGE en este script, o corre:"
   echo "  FARMALOG_IMAGE=ghcr.io/<tu-usuario>/farmalog-nucleo-worker:latest bash infra/provision.sh"
   exit 1
 fi
@@ -141,6 +156,65 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# Rebanada 2 — Replicación.
+#
+# Cola de replicación (comando Núcleo → Function). La detección de duplicados
+# solo se activa al CREAR la entidad. El espaciado del reintento lo da
+# LockDuration y el límite MaxDeliveryCount (decisión 99): 5 entregas
+# espaciadas 1 minuto ≈ 5 minutos de caída de D365 tolerada antes de la DLQ.
+# ---------------------------------------------------------------------------
+if az servicebus queue show -g "$RG" --namespace-name "$SB_NS" -n "$REPLICACION_QUEUE" -o none 2>/dev/null; then
+  echo "==> Cola $REPLICACION_QUEUE: ya existe (no se toca: la detección de duplicados es inmutable)"
+else
+  echo "==> Creando cola $REPLICACION_QUEUE"
+  az servicebus queue create \
+    --resource-group "$RG" \
+    --namespace-name "$SB_NS" \
+    --name "$REPLICACION_QUEUE" \
+    --max-delivery-count 5 \
+    --lock-duration PT1M \
+    --enable-duplicate-detection true \
+    --duplicate-detection-history-time-window PT10M \
+    -o none
+fi
+
+# Tópico del resultado (evento Function → Núcleo y Notificaciones). Se crea
+# JUNTO con sus suscripciones y antes de que alguien publique: un mensaje en
+# un tópico sin suscripciones se descarta en silencio (decisión 103).
+# Sin detección de duplicados: el publicador no fija MessageId; el duplicado
+# lo absorbe la idempotencia del consumidor (decisión 123).
+if az servicebus topic show -g "$RG" --namespace-name "$SB_NS" -n "$RESULTADO_TOPIC" -o none 2>/dev/null; then
+  echo "==> Tópico $RESULTADO_TOPIC: ya existe"
+else
+  echo "==> Creando tópico $RESULTADO_TOPIC"
+  az servicebus topic create \
+    --resource-group "$RG" \
+    --namespace-name "$SB_NS" \
+    --name "$RESULTADO_TOPIC" \
+    -o none
+fi
+
+# Las dos suscripciones reciben TODOS los resultados (regla $Default).
+# notificaciones no lleva filtro: el sistema real avisa por correo tanto los
+# pedidos aceptados como los rechazados (decisión 125, reemplaza a la 102).
+for SUBSCRIPTION in "$NUCLEO_SUBSCRIPTION" "$NOTIFICACIONES_SUBSCRIPTION"; do
+  if az servicebus topic subscription show -g "$RG" --namespace-name "$SB_NS" \
+       --topic-name "$RESULTADO_TOPIC" -n "$SUBSCRIPTION" -o none 2>/dev/null; then
+    echo "==> Suscripción $SUBSCRIPTION: ya existe"
+  else
+    echo "==> Creando suscripción $SUBSCRIPTION"
+    az servicebus topic subscription create \
+      --resource-group "$RG" \
+      --namespace-name "$SB_NS" \
+      --topic-name "$RESULTADO_TOPIC" \
+      --name "$SUBSCRIPTION" \
+      --max-delivery-count 3 \
+      --lock-duration PT1M \
+      -o none
+  fi
+done
+
+# ---------------------------------------------------------------------------
 # Azure SQL — free offer, serverless, auto-pause.
 # La password no se puede leer de Azure: se pide siempre, porque hace falta
 # para armar la connection string aunque el servidor ya exista.
@@ -212,10 +286,11 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Cadenas de conexión — se arman una sola vez y alimentan TRES destinos:
-# .env.local (contenedor local), user-secrets (Development) y los secrets del
-# Container App (Production en Azure). Duplicación de valor, no de decisión:
-# el riesgo no es tenerlas repetidas, es que se actualicen por separado.
+# Cadenas de conexión — se arman una sola vez y alimentan CUATRO destinos:
+# .env.local (contenedor local), user-secrets (Development), los secrets del
+# Container App (Production en Azure) y el local.settings.json de la Function.
+# Duplicación de valor, no de decisión: el riesgo no es tenerlas repetidas,
+# es que se actualicen por separado.
 # ---------------------------------------------------------------------------
 SB_CONN=$(az servicebus namespace authorization-rule keys list \
   --resource-group "$RG" --namespace-name "$SB_NS" \
@@ -238,6 +313,23 @@ dotnet user-secrets set "ConnectionStrings:ServiceBus" "$SB_CONN" --project $WOR
 dotnet user-secrets set "ConnectionStrings:NucleoDb" "$SQL_CONN" --project $WORKER_DIR
 EOF
 chmod 600 "$SECRETS_FILE"
+
+# local.settings.json de la Function: CUARTO destino de la configuración.
+# Lo lee el HOST de Functions (el trigger resuelve "ServiceBus" ahí, no en el
+# worker), así que user-secrets no sirve. Se regenera entero, igual que
+# .env.local: este archivo no se edita a mano.
+cat > "$FUNCTION_SETTINGS" <<EOF
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ServiceBus": "${SB_CONN}",
+    "D365__BaseUrl": "${D365_FAKE_URL}"
+  }
+}
+EOF
+chmod 600 "$FUNCTION_SETTINGS"
 
 # ---------------------------------------------------------------------------
 # Container Apps — el TERCER destino de la configuración.
@@ -320,6 +412,7 @@ echo
 echo "================= SECRETOS (fuera de pantalla) ================="
 echo "$ENV_FILE     -> alimenta 'docker run --env-file $ENV_FILE'"
 echo "Container App  -> secrets sb-conn / sql-conn repuestos en Azure"
+echo "$FUNCTION_SETTINGS -> ServiceBus y D365__BaseUrl de la Function"
 
 # Los user-secrets son la OTRA fuente de configuración: alimentan al worker en
 # Development (IDE y 'dotnet ef'). Se cargan acá para que no puedan divergir
@@ -331,11 +424,11 @@ if command -v dotnet >/dev/null 2>&1 && [[ -d "$WORKER_DIR" ]]; then
   && dotnet user-secrets set "ConnectionStrings:NucleoDb"   "$SQL_CONN" --project "$WORKER_DIR" >/dev/null 2>&1; then
     echo "user-secrets   -> cargados en $WORKER_DIR (estado fuera del repo)"
   else
-    echo "user-secrets   -> FALLÓ. Cargalos a mano con:  bash $SECRETS_FILE"
+    echo "user-secrets   -> FALLÓ. Cárgalos a mano con:  bash $SECRETS_FILE"
   fi
 else
   echo "user-secrets   -> omitidos (falta el SDK de .NET o el proyecto)."
-  echo "                  Cargalos con:  bash $SECRETS_FILE"
+  echo "                  Cárgalos con:  bash $SECRETS_FILE"
 fi
 
 if [[ "$BASE_RECIEN_CREADA" == "true" ]]; then
@@ -358,3 +451,11 @@ echo "az containerapp show -g $RG -n $ACA_APP --query \"properties.template.scal
 echo
 echo "# El ciclo: debería bajar a 0 tras el enfriamiento (~5 min):"
 echo "az containerapp replica list -g $RG -n $ACA_APP -o table"
+echo
+echo "# La cola de replicación:"
+echo "az servicebus queue show -g $RG --namespace-name $SB_NS -n $REPLICACION_QUEUE \\"
+echo "  --query \"{max:maxDeliveryCount, dup:requiresDuplicateDetection, ventana:duplicateDetectionHistoryTimeWindow, lock:lockDuration}\""
+echo
+echo "# Las suscripciones del tópico de resultado:"
+echo "az servicebus topic subscription list -g $RG --namespace-name $SB_NS --topic-name $RESULTADO_TOPIC \\"
+echo "  --query \"[].{suscripcion:name, max:maxDeliveryCount, lock:lockDuration}\" -o table"
