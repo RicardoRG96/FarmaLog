@@ -363,3 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 .env.local
 .secrets-comandos.local
+
+# Azurite: estado local del emulador de Storage (no es código)
+__azurite_db_*__.json
+__blobstorage__/
+__queuestorage__/
