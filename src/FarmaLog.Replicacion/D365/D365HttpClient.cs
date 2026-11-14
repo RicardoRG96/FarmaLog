@@ -28,6 +28,8 @@ namespace FarmaLog.Replicacion.D365
                 return new RespuestaD365.Rechazado(pedidoRechazadoResponse.Motivos);
             }
 
+            httpResponse.EnsureSuccessStatusCode();
+
             PedidoAceptadoResponse? pedidoAceptadoResponse = await httpResponse.Content.ReadFromJsonAsync<PedidoAceptadoResponse>(
                 JsonSerializerOptions.Default, cancellationToken);
 

@@ -106,5 +106,17 @@ namespace FarmaLog.Replicacion.Tests.D365
             //Assert
             Assert.AreEqual(new RespuestaD365.YaExistia("PV-0000000037"), response);
         }
+
+        [TestMethod]
+        public async Task D365HttpClient_Should_ThrowHttpRequestException_When_D365Responds503()
+        {
+            //Arrange
+            (D365HttpClient client, _) = CreateClient(HttpStatusCode.ServiceUnavailable, "");
+            PedidoVentaD365 pedido = CreatePedidoVentaD365();
+
+            //Act + Assert
+            await Assert.ThrowsAsync<HttpRequestException>(
+                () => client.CrearPedidoVentaAsync(pedido, CancellationToken.None));
+        }
     }
 }
