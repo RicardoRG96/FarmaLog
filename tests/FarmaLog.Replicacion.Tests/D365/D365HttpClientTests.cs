@@ -66,5 +66,29 @@ namespace FarmaLog.Replicacion.Tests.D365
             //Assert
             Assert.AreEqual(new RespuestaD365.Aceptado("PV-0000000099"), response);
         }
+
+        [TestMethod]
+        public async Task D365HttpClient_Should_ReturnRechazadoWitAllMotivosInOrder_When_D365Responds400()
+        {
+            //Arrange
+            (D365HttpClient client, _) =
+                CreateClient(HttpStatusCode.BadRequest, 
+                    """{ "Motivos": ["La cuenta 23-0773456789 no existe.", "El SKU SKU-1 no existe."] }""");
+            PedidoVentaD365 pedido = CreatePedidoVentaD365();
+
+            //Act
+            RespuestaD365 response = await client.CrearPedidoVentaAsync(pedido, CancellationToken.None);
+
+            //Assert
+            if (response is not RespuestaD365.Rechazado rechazado)
+            {
+                Assert.Fail($"Se esperaba Rechazado y llegó {response.GetType().Name}");
+                return;
+            }
+
+            CollectionAssert.AreEqual(
+                new[] { "La cuenta 23-0773456789 no existe.", "El SKU SKU-1 no existe." },
+                rechazado.Motivos.ToList());
+        }
     }
 }

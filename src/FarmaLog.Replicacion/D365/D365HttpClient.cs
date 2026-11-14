@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace FarmaLog.Replicacion.D365
@@ -10,12 +11,21 @@ namespace FarmaLog.Replicacion.D365
             using HttpResponseMessage httpResponse = await client.PostAsJsonAsync(
                 "api/salesorders", pedido, JsonSerializerOptions.Default, cancellationToken);
 
-            D365Response? d365Response = await httpResponse.Content.ReadFromJsonAsync<D365Response>(
+            if (httpResponse.StatusCode is HttpStatusCode.BadRequest)
+            {
+                PedidoRechazadoResponse? pedidoRechazadoResponse = await httpResponse.Content.ReadFromJsonAsync<PedidoRechazadoResponse>(
+                    JsonSerializerOptions.Default, cancellationToken);
+
+                return new RespuestaD365.Rechazado(pedidoRechazadoResponse!.Motivos);
+            }
+
+            PedidoAceptadoResponse? pedidoAceptadoResponse = await httpResponse.Content.ReadFromJsonAsync<PedidoAceptadoResponse>(
                 JsonSerializerOptions.Default, cancellationToken);
 
-            return new RespuestaD365.Aceptado(d365Response!.NumeroPedido);
+            return new RespuestaD365.Aceptado(pedidoAceptadoResponse!.NumeroPedido);
         }
 
-        private sealed record D365Response(string NumeroPedido);
+        private sealed record PedidoRechazadoResponse(IReadOnlyCollection<string> Motivos);
+        private sealed record PedidoAceptadoResponse(string NumeroPedido);
     }
 }
